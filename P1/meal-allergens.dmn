@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_meal_allergens" name="Meal Allergens" namespace="http://camunda.org/schema/1.0/dmn" exporter="Manual / template" exporterVersion="1.1" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.9.0">
+  <decision id="BreakfastAllergens" name="Breakfast Allergens">
+    <decisionTable id="DT_BreakfastAllergens" hitPolicy="COLLECT">
+      <input id="Input_breakfast" label="Breakfast meal">
+        <inputExpression id="InputExpression_breakfast" typeRef="string">
+          <text>choiceBreakfast</text>
+        </inputExpression>
+      </input>
+      <output id="Output_breakfast_allergen" label="Allergen" name="allergen" typeRef="string" />
+      <rule id="rule_brk_01">
+        <inputEntry id="ie_brk_01">
+          <text>"oatmeal-bowl"</text>
+        </inputEntry>
+        <outputEntry id="oe_brk_01">
+          <text>"gluten"</text>
+        </outputEntry>
+      </rule>
+      <rule id="rule_brk_02">
+        <inputEntry id="ie_brk_02">
+          <text>"oatmeal-bowl"</text>
+        </inputEntry>
+        <outputEntry id="oe_brk_02">
+          <text>"lactose"</text>
+        </outputEntry>
+      </rule>
+      <rule id="rule_brk_03">
+        <inputEntry id="ie_brk_03">
+          <text>"oatmeal-bowl"</text>
+        </inputEntry>
+        <outputEntry id="oe_brk_03">
+          <text>"nuts"</text>
+        </outputEntry>
+      </rule>
+      <rule id="rule_brk_04">
+        <inputEntry id="ie_brk_04">
+          <text>"egg-omelet"</text>
+        </inputEntry>
+        <outputEntry id="oe_brk_04">
+          <text>"eggs"</text>
+        </outputEntry>
+      </rule>
+      <rule id="rule_brk_05">
+        <inputEntry id="ie_brk_05">
+          <text>"egg-omelet"</text>
+        </inputEntry>
+        <outputEntry id="oe_brk_05">
+          <text>"lactose"</text>
+        </outputEntry>
+      </rule>
+      <rule id="rule_brk_06">
+        <inputEntry id="ie_brk_06">
+          <text>"egg-omelet"</text>
+        </inputEntry>
+        <outputEntry id="oe_brk_06">
+          <text>"gluten"</text>
+        </outputEntry>
+      </rule>
+      <rule id="rule_brk_07">
+        <inputEntry id="ie_brk_07">
+          <text>"avocado-toast"</text>
+        </inputEntry>
+        <outputEntry id="oe_brk_07">
+          <text>"gluten"</text>
+        </outputEntry>
+      </rule>
+      <rule id="rule_brk_08">
+        <inputEntry id="ie_brk_08">
+          <text>"avocado-toast"</text>
+        </inputEntry>
+        <outputEntry id="oe_brk_08">
+          <text>"eggs"</text>
+        </outputEntry>
+      </rule>
+      <rule id="rule_brk_09">
+        <inputEntry id="ie_brk_09">
+          <text>"avocado-toast"</text>
+        </inputEntry>
+        <outputEntry id="oe_brk_09">
+          <text>"lactose"</text>
+        </outputEntry>
+      </rule>
+      <rule id="rule_brk_10">
+        <inputEntry id="ie_brk_10">
+          <text>"tuna-egg-wrap"</text>
+        </inputEntry>
+        <outputEntry id="oe_brk_10">
+          <text>"gluten"</text>
+        </outputEntry>
+      </rule>
+      <rule id="rule_brk_11">
+        <inputEntry id="ie_brk_11">
+          <text>"tuna-egg-wrap"</text>
+        </inputEntry>
+        <outputEntry id="oe_brk_11">
+          <text>"fish"</text>
+        </outputEntry>
+      </rule>
+      <rule id="rule_brk_12">
+        <inputEntry id="ie_brk_12">
+          <text>"tuna-egg-wrap"</text>
+        </inputEntry>
+        <outputEntry id="oe_brk_12">
+          <text>"eggs"</text>
+        </outputEntry>
+      </rule>
+      <rule id="rule_brk_13">
+        <inputEntry id="ie_brk_13">
+          <text>"tuna-egg-wrap"</text>
+        </inputEntry>
+        <outputEntry id="oe_brk_13">
+          <text>"lactose"</text>
+        </outputEntry>
+      </rule>
+      <rule id="rule_brk_14">
+        <inputEntry id="ie_brk_14">
+          <text>"rice-porridge"</text>
+        </inputEntry>
+        <outputEntry id="oe_brk_14">
+          <text>"lactose"</text>
+        </outputEntry>
+      </rule>
+      <rule id="rule_brk_15">
+        <inputEntry id="ie_brk_15">
+          <text>"rice-porridge"</text>
+        </inputEntry>
+        <outputEntry id="oe_brk_15">
+          <text>"nuts"</text>
+        </outputEntry>
+      </rule>
+      <rule id="rule_brk_16">
+        <inputEntry id="ie_brk_16">
+          <text>"rice-porridge"</text>
+        </inputEntry>
+        <outputEntry id="oe_brk_16">
+          <text>"peanuts"</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <decision id="LunchAllergens" name="Lunch Allergens">
+    <decisionTable id="DT_LunchAllergens" hitPolicy="COLLECT">
+      <input id="Input_lunch" label="Lunch meal">
+        <inputExpression id="InputExpression_lunch" typeRef="string">
+          <text>choiceLunch</text>
+        </inputExpression>
+      </input>
+      <output id="Output_lunch_allergen" label="Allergen" name="allergen" typeRef="string" />
+      <rule id="rule_lun_01">
+        <inputEntry id="ie_lun_01">
+          <text>"caesar-salad"</text>
+        </inputEntry>
+        <outputEntry id="oe_lun_01">
+          <text>"gluten"</text>
+        </outputEntry>
+      </rule>
+      <rule id="rule_lun_02">
+        <inputEntry id="ie_lun_02">
+          <text>"caesar-salad"</text>
+        </inputEntry>
+        <outputEntry id="oe_lun_02">
+          <text>"lactose"</text>
+        </outputEntry>
+      </rule>
+      <rule id="rule_lun_03">
+        <inputEntry id="ie_lun_03">
+          <text>"turkey-meatballs"</text>
+        </inputEntry>
+        <outputEntry id="oe_lun_03">
+          <text>"gluten"</text>
+        </outputEntry>
+      </rule>
+      <rule id="rule_lun_04">
+        <inputEntry id="ie_lun_04">
+          <text>"turkey-meatballs"</text>
+        </inputEntry>
+        <outputEntry id="oe_lun_04">
+          <text>"eggs"</text>
+        </outputEntry>
+      </rule>
+      <rule id="rule_lun_05">
+        <inputEntry id="ie_lun_05">
+          <text>"salmon-potatoes"</text>
+        </inputEntry>
+        <outputEntry id="oe_lun_05">
+          <text>"fish"</text>
+        </outputEntry>
+      </rule>
+      <rule id="rule_lun_06">
+        <inputEntry id="ie_lun_06">
+          <text>"tofu-bowl"</text>
+        </inputEntry>
+        <outputEntry id="oe_lun_06">
+          <text>"soybean"</text>
+        </outputEntry>
+      </rule>
+      <rule id="rule_lun_07">
+        <inputEntry id="ie_lun_07">
+          <text>"tofu-bowl"</text>
+        </inputEntry>
+        <outputEntry id="oe_lun_07">
+          <text>"sesame"</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <decision id="DinnerAllergens" name="Dinner Allergens">
+    <decisionTable id="DT_DinnerAllergens" hitPolicy="COLLECT">
+      <input id="Input_dinner" label="Dinner meal">
+        <inputExpression id="InputExpression_dinner" typeRef="string">
+          <text>choiceDinner</text>
+        </inputExpression>
+      </input>
+      <output id="Output_dinner_allergen" label="Allergen" name="allergen" typeRef="string" />
+      <rule id="rule_din_01">
+        <inputEntry id="ie_din_01">
+          <text>"chicken-salad"</text>
+        </inputEntry>
+        <outputEntry id="oe_din_01">
+          <text>"gluten"</text>
+        </outputEntry>
+      </rule>
+      <rule id="rule_din_02">
+        <inputEntry id="ie_din_02">
+          <text>"chicken-salad"</text>
+        </inputEntry>
+        <outputEntry id="oe_din_02">
+          <text>"lactose"</text>
+        </outputEntry>
+      </rule>
+      <rule id="rule_din_03">
+        <inputEntry id="ie_din_03">
+          <text>"egg-skillet"</text>
+        </inputEntry>
+        <outputEntry id="oe_din_03">
+          <text>"eggs"</text>
+        </outputEntry>
+      </rule>
+      <rule id="rule_din_04">
+        <inputEntry id="ie_din_04">
+          <text>"beef-bowl"</text>
+        </inputEntry>
+        <outputEntry id="oe_din_04">
+          <text>"lactose"</text>
+        </outputEntry>
+      </rule>
+      <rule id="rule_din_05">
+        <inputEntry id="ie_din_05">
+          <text>"salmon-poke"</text>
+        </inputEntry>
+        <outputEntry id="oe_din_05">
+          <text>"fish"</text>
+        </outputEntry>
+      </rule>
+      <rule id="rule_din_06">
+        <inputEntry id="ie_din_06">
+          <text>"salmon-poke"</text>
+        </inputEntry>
+        <outputEntry id="oe_din_06">
+          <text>"soybean"</text>
+        </outputEntry>
+      </rule>
+      <rule id="rule_din_07">
+        <inputEntry id="ie_din_07">
+          <text>"salmon-poke"</text>
+        </inputEntry>
+        <outputEntry id="oe_din_07">
+          <text>"sesame"</text>
+        </outputEntry>
+      </rule>
+      <rule id="rule_din_08">
+        <inputEntry id="ie_din_08">
+          <text>"salmon-poke"</text>
+        </inputEntry>
+        <outputEntry id="oe_din_08">
+          <text>"gluten"</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram>
+      <dmndi:DMNShape id="DMNShape_1" dmnElementRef="BreakfastAllergens">
+        <dc:Bounds height="80" width="180" x="160" y="110" />
+      </dmndi:DMNShape>
+      <dmndi:DMNShape id="DMNShape_2" dmnElementRef="LunchAllergens">
+        <dc:Bounds height="80" width="180" x="570" y="110" />
+      </dmndi:DMNShape>
+      <dmndi:DMNShape id="DMNShape_3" dmnElementRef="DinnerAllergens">
+        <dc:Bounds height="80" width="180" x="990" y="110" />
+      </dmndi:DMNShape>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</definitions>

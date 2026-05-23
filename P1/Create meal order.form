@@ -1,0 +1,383 @@
+{
+  "executionPlatform": "Camunda Cloud",
+  "executionPlatformVersion": "8.9.0",
+  "exporter": {
+    "name": "Camunda Web Modeler",
+    "version": "dc1bfde"
+  },
+  "schemaVersion": 19,
+  "id": "meal-order-received",
+  "components": [
+    {
+      "label": "Customer information",
+      "components": [
+        {
+          "label": "Name and surename",
+          "type": "textfield",
+          "layout": {
+            "row": "Row_0px6h82",
+            "columns": null
+          },
+          "id": "Field_170lcm3",
+          "key": "customerName",
+          "validate": {
+            "required": true
+          }
+        },
+        {
+          "label": "Email address",
+          "type": "textfield",
+          "layout": {
+            "row": "Row_0zldpo5",
+            "columns": null
+          },
+          "id": "Field_1mx3832",
+          "key": "customerEmail",
+          "validate": {
+            "required": true,
+            "validationType": "email"
+          }
+        },
+        {
+          "label": "Phone number",
+          "type": "textfield",
+          "layout": {
+            "row": "Row_0zldpo5",
+            "columns": null
+          },
+          "id": "Field_0b0qyuz",
+          "key": "customerPhone",
+          "validate": {
+            "required": true,
+            "validationType": "phone"
+          }
+        }
+      ],
+      "showOutline": true,
+      "type": "group",
+      "layout": {
+        "row": "Row_0tdt0hv",
+        "columns": null
+      },
+      "id": "Field_15yt822"
+    },
+    {
+      "label": "Delivery information",
+      "components": [
+        {
+          "label": "Delivery address",
+          "type": "textfield",
+          "layout": {
+            "row": "Row_1kzuv56",
+            "columns": null
+          },
+          "id": "Field_0udgbv7",
+          "key": "deliveryAddress",
+          "validate": {
+            "required": true,
+            "minLength": "10"
+          }
+        },
+        {
+          "subtype": "date",
+          "dateLabel": "Delivery date",
+          "type": "datetime",
+          "layout": {
+            "row": "Row_0km5v8p",
+            "columns": null
+          },
+          "id": "Field_1wlk47q",
+          "key": "deliveryDate",
+          "validate": {
+            "required": true
+          }
+        }
+      ],
+      "showOutline": true,
+      "type": "group",
+      "layout": {
+        "row": "Row_121xaa8",
+        "columns": null
+      },
+      "id": "Field_1xvn9ox"
+    },
+    {
+      "label": "Breakfast",
+      "components": [
+        {
+          "label": "Breakfast selection",
+          "values": [
+            {
+              "label": "Protein Oatmeal Bowl",
+              "value": "oatmeal-bowl"
+            },
+            {
+              "label": "Egg Omelette with Sourdough Bread",
+              "value": "egg-omelet"
+            },
+            {
+              "label": "Avocado Toast with Eggs",
+              "value": "avocado-toast"
+            },
+            {
+              "label": "Tuna & Egg Breakfast Wrap",
+              "value": "tuna-egg-wrap"
+            },
+            {
+              "label": "Rice Protein Porridge",
+              "value": "rice-porridge"
+            }
+          ],
+          "type": "select",
+          "layout": {
+            "row": "Row_1m8xuhs",
+            "columns": null
+          },
+          "id": "Field_0xb1fjf",
+          "key": "choiceBreakfast"
+        },
+        {
+          "label": "Number of portions",
+          "type": "number",
+          "layout": {
+            "row": "Row_1m8xuhs",
+            "columns": null
+          },
+          "id": "Field_1flzbor",
+          "key": "breakfastPortions",
+          "defaultValue": 1,
+          "validate": {
+            "required": true,
+            "min": "0",
+            "max": "10"
+          }
+        }
+      ],
+      "showOutline": true,
+      "type": "group",
+      "layout": {
+        "row": "Row_05lqjbb",
+        "columns": null
+      },
+      "id": "Field_0851tlt"
+    },
+    {
+      "label": "Lunch",
+      "components": [
+        {
+          "label": "Lunch selection",
+          "values": [
+            {
+              "label": "Grilled Chicken Rice Bowl",
+              "value": "chicken-rice-bowl"
+            },
+            {
+              "label": "Chicken Caesar-Inspired Salad Bowl",
+              "value": "caesar-salad"
+            },
+            {
+              "label": "Turkey Meatballs with Whole-Grain Pasta",
+              "value": "turkey-meatballs"
+            },
+            {
+              "label": "Lean Beef Chili with Rice",
+              "value": "beef-rice"
+            },
+            {
+              "label": "Salmon with Sweet Potatoes and Greens",
+              "value": "salmon-potatoes"
+            },
+            {
+              "label": "Lentil Curry with Rice",
+              "value": "lentil-curry"
+            },
+            {
+              "label": "Tofu Buddha Bowl",
+              "value": "tofu-bowl"
+            }
+          ],
+          "type": "select",
+          "layout": {
+            "row": "Row_13gz55i",
+            "columns": null
+          },
+          "id": "Field_1r7n9yi",
+          "key": "choiceLunch"
+        },
+        {
+          "label": "Number of portions",
+          "type": "number",
+          "layout": {
+            "row": "Row_13gz55i",
+            "columns": null
+          },
+          "id": "Field_0ybwoyc",
+          "key": "lunchPortions",
+          "validate": {
+            "required": true,
+            "min": "0",
+            "max": "10"
+          },
+          "defaultValue": 1
+        }
+      ],
+      "showOutline": true,
+      "type": "group",
+      "layout": {
+        "row": "Row_1xrp414",
+        "columns": null
+      },
+      "id": "Field_0k6b531"
+    },
+    {
+      "label": "Dinner",
+      "components": [
+        {
+          "label": "Dinner selection",
+          "values": [
+            {
+              "label": "Greek Chicken Salad Plate",
+              "value": "chicken-salad"
+            },
+            {
+              "label": "Egg & Potato Skillet",
+              "value": "egg-skillet"
+            },
+            {
+              "label": "Beef Burrito Bowl",
+              "value": "beef-bowl"
+            },
+            {
+              "label": "Salmon Poke-Style Bowl",
+              "value": "salmon-poke"
+            }
+          ],
+          "type": "select",
+          "layout": {
+            "row": "Row_1lajkkx",
+            "columns": null
+          },
+          "id": "Field_0nrnpti",
+          "key": "choiceDinner"
+        },
+        {
+          "label": "Number of portions",
+          "type": "number",
+          "layout": {
+            "row": "Row_1lajkkx",
+            "columns": null
+          },
+          "id": "Field_048wifm",
+          "key": "dinnerPortions",
+          "validate": {
+            "required": true,
+            "min": "0",
+            "max": "10"
+          },
+          "defaultValue": 1
+        }
+      ],
+      "showOutline": true,
+      "type": "group",
+      "layout": {
+        "row": "Row_0v4mub0",
+        "columns": null
+      },
+      "id": "Field_1q1cyzv"
+    },
+    {
+      "label": "Alergens",
+      "components": [
+        {
+          "label": "Choose your allergies",
+          "values": [
+            {
+              "label": "Gluten",
+              "value": "gluten"
+            },
+            {
+              "label": "Crustances",
+              "value": "crustances"
+            },
+            {
+              "label": "Eggs",
+              "value": "eggs"
+            },
+            {
+              "label": "Fish",
+              "value": "fish"
+            },
+            {
+              "label": "Peanuts",
+              "value": "peanuts"
+            },
+            {
+              "label": "Soybean",
+              "value": "soybean"
+            },
+            {
+              "label": "Lactose",
+              "value": "lactose"
+            },
+            {
+              "label": "Nuts",
+              "value": "nuts"
+            },
+            {
+              "label": "Celery",
+              "value": "celery"
+            },
+            {
+              "label": "Mustard",
+              "value": "mustard"
+            },
+            {
+              "label": "Sesame seeds",
+              "value": "sesame"
+            },
+            {
+              "label": "Sulphites",
+              "value": "sulphites"
+            },
+            {
+              "label": "Lupin",
+              "value": "lupin"
+            },
+            {
+              "label": "Mollucs",
+              "value": "mollucs"
+            }
+          ],
+          "type": "checklist",
+          "layout": {
+            "row": "Row_0rttazy",
+            "columns": 3
+          },
+          "id": "Field_1x0hojs",
+          "key": "customerAllergens",
+          "validate": {
+            "required": false
+          }
+        }
+      ],
+      "showOutline": true,
+      "type": "group",
+      "layout": {
+        "row": "Row_1xlustp",
+        "columns": 16
+      },
+      "id": "Field_0w6h5cx"
+    },
+    {
+      "label": "Submit",
+      "action": "submit",
+      "type": "button",
+      "layout": {
+        "row": "Row_19revhq",
+        "columns": 2
+      },
+      "id": "Field_1daebsm"
+    }
+  ],
+  "type": "default"
+}

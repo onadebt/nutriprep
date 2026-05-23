@@ -1,0 +1,152 @@
+{
+  "executionPlatform": "Camunda Cloud",
+  "executionPlatformVersion": "8.9.0",
+  "exporter": {
+    "name": "Camunda Web Modeler",
+    "version": "dc1bfde"
+  },
+  "schemaVersion": 19,
+  "id": "resolve-payment-issue",
+  "components": [
+    {
+      "label": "Order details",
+      "components": [
+        {
+          "label": "Order ID",
+          "type": "textfield",
+          "key": "orderId",
+          "disabled": true,
+          "layout": {
+            "row": "Row_ctx_1",
+            "columns": 7
+          },
+          "id": "Field_ctx_orderId"
+        },
+        {
+          "label": "Payment request ID",
+          "type": "textfield",
+          "key": "paymentRequestId",
+          "disabled": true,
+          "layout": {
+            "row": "Row_ctx_1",
+            "columns": 9
+          },
+          "id": "Field_ctx_paymentRequestId"
+        },
+        {
+          "label": "Customer name",
+          "type": "textfield",
+          "key": "customerName",
+          "disabled": true,
+          "layout": {
+            "row": "Row_ctx_2",
+            "columns": null
+          },
+          "id": "Field_ctx_customerName"
+        },
+        {
+          "label": "Customer email",
+          "type": "textfield",
+          "key": "customerEmail",
+          "disabled": true,
+          "layout": {
+            "row": "Row_ctx_3",
+            "columns": 8
+          },
+          "id": "Field_ctx_customerEmail"
+        },
+        {
+          "label": "Customer phone",
+          "type": "textfield",
+          "key": "customerPhone",
+          "disabled": true,
+          "layout": {
+            "row": "Row_ctx_3",
+            "columns": 8
+          },
+          "id": "Field_ctx_customerPhone"
+        },
+        {
+          "label": "Order total (EUR)",
+          "type": "number",
+          "key": "orderTotal",
+          "disabled": true,
+          "layout": {
+            "row": "Row_ctx_4",
+            "columns": null
+          },
+          "id": "Field_ctx_orderTotal"
+        }
+      ],
+      "showOutline": true,
+      "type": "group",
+      "layout": {
+        "row": "Row_ctx_group",
+        "columns": 13
+      },
+      "id": "Field_OrderContextGroup"
+    },
+    {
+      "label": "",
+      "components": [
+        {
+          "text": "## Was the payment issue resolved successfully?",
+          "type": "text",
+          "layout": {
+            "row": "Row_1lvqsef",
+            "columns": null
+          },
+          "id": "Field_09m27hl"
+        },
+        {
+          "label": "Issue resolved?",
+          "values": [
+            {
+              "label": "Yes — payment resolved",
+              "value": true
+            },
+            {
+              "label": "No — could not resolve",
+              "value": false
+            }
+          ],
+          "type": "radio",
+          "layout": {
+            "row": "Row_04cy8jb",
+            "columns": null
+          },
+          "id": "Field_1wpt4g4",
+          "key": "transactionSuccessful",
+          "validate": {
+            "required": true
+          }
+        },
+        {
+          "label": "Reason",
+          "type": "textarea",
+          "layout": {
+            "row": "Row_194ev8x",
+            "columns": null
+          },
+          "id": "Field_0cymu1l",
+          "key": "resolutionNotes",
+          "conditional": {
+            "hide": "=transactionSuccessful = true"
+          },
+          "description": "Why you cannot resolve an issue?",
+          "validate": {
+            "required": true
+          }
+        }
+      ],
+      "showOutline": true,
+      "type": "group",
+      "layout": {
+        "row": "Row_0aq8djb",
+        "columns": 13
+      },
+      "id": "Field_0iqsx4u"
+    }
+  ],
+  "type": "default"
+}

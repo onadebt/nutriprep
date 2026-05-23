@@ -1,0 +1,43 @@
+spring boot
+camunda.client.mode=saas
+camunda.client.auth.client-id=KzoLE6x~BYxNT~Ayyw48E89erHeaVgvr
+camunda.client.auth.client-secret=qQR7fF_~0IxlF~GuyCRIxSN5kLc8dxK_BzWD9lo6BgFhey0pCmfm5r4e-OMLSA7S
+camunda.client.cloud.cluster-id=47804366-6f9a-46b7-ac61-b050497bac92
+camunda.client.cloud.region=cdg-1
+
+
+env vars
+export ZEEBE_ADDRESS='47804366-6f9a-46b7-ac61-b050497bac92.cdg-1.zeebe.camunda.io:443'
+export ZEEBE_CLIENT_ID='KzoLE6x~BYxNT~Ayyw48E89erHeaVgvr'
+export ZEEBE_CLIENT_SECRET='qQR7fF_~0IxlF~GuyCRIxSN5kLc8dxK_BzWD9lo6BgFhey0pCmfm5r4e-OMLSA7S'
+export ZEEBE_AUTHORIZATION_SERVER_URL='https://login.cloud.camunda.io/oauth/token'
+export ZEEBE_REST_ADDRESS='https://cdg-1.zeebe.camunda.io/47804366-6f9a-46b7-ac61-b050497bac92'
+export ZEEBE_GRPC_ADDRESS='grpcs://47804366-6f9a-46b7-ac61-b050497bac92.cdg-1.zeebe.camunda.io:443'
+export ZEEBE_TOKEN_AUDIENCE='zeebe.camunda.io'
+export CAMUNDA_TOKEN_AUDIENCE='zeebe.camunda.io'
+export CAMUNDA_CLUSTER_ID='47804366-6f9a-46b7-ac61-b050497bac92'
+export CAMUNDA_CLIENT_ID='KzoLE6x~BYxNT~Ayyw48E89erHeaVgvr'
+export CAMUNDA_CLIENT_SECRET='qQR7fF_~0IxlF~GuyCRIxSN5kLc8dxK_BzWD9lo6BgFhey0pCmfm5r4e-OMLSA7S'
+export CAMUNDA_CLUSTER_REGION='cdg-1'
+export CAMUNDA_CREDENTIALS_SCOPES='Orchestration'
+export CAMUNDA_TASKLIST_BASE_URL='https://cdg-1.tasklist.camunda.io/47804366-6f9a-46b7-ac61-b050497bac92'
+export CAMUNDA_OPTIMIZE_BASE_URL='https://cdg-1.optimize.camunda.io/47804366-6f9a-46b7-ac61-b050497bac92'
+export CAMUNDA_OPERATE_BASE_URL='https://cdg-1.operate.camunda.io/47804366-6f9a-46b7-ac61-b050497bac92'
+export CAMUNDA_OAUTH_URL='https://login.cloud.camunda.io/oauth/token'
+export CAMUNDA_CLIENT_MODE='saas'
+export CAMUNDA_CLIENT_AUTH_CLIENTID='KzoLE6x~BYxNT~Ayyw48E89erHeaVgvr'
+export CAMUNDA_CLIENT_AUTH_CLIENTSECRET='qQR7fF_~0IxlF~GuyCRIxSN5kLc8dxK_BzWD9lo6BgFhey0pCmfm5r4e-OMLSA7S'
+export CAMUNDA_CLIENT_CLOUD_CLUSTERID='47804366-6f9a-46b7-ac61-b050497bac92'
+export CAMUNDA_CLIENT_CLOUD_REGION='cdg-1'
+
+
+
+desktop modeler
+Cluster URL	
+https://cdg-1.zeebe.camunda.io/47804366-6f9a-46b7-ac61-b050497bac92
+
+Client Id	
+KzoLE6x~BYxNT~Ayyw48E89erHeaVgvr
+
+Client secret	
+qQR7fF_~0IxlF~GuyCRIxSN5kLc8dxK_BzWD9lo6BgFhey0pCmfm5r4e-OMLSA7S

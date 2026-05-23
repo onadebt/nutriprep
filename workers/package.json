@@ -1,0 +1,16 @@
+{
+  "name": "workers",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node worker.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@camunda8/sdk": "^8.8.11",
+    "nodemailer": "^8.0.7"
+  }
+}

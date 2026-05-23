@@ -26,6 +26,7 @@ for (const key of REQUIRED_CONFIG) {
 }
 
 const ACTIVE_SCENARIO = "delayedWithEmail";
+const ACTIVE_P1_SCENARIO = "p1PaymentTimeout";
 const CAMEL_PAYMENT_URL = "http://localhost:8081/payment";
 const PAYMENT_RESULT_MESSAGE = "payment-result";
 const PAYMENT_MESSAGE_TTL_MS = 10 * 60 * 1000;
@@ -72,6 +73,69 @@ const SCENARIOS = {
     deliverySuccessful: false,
     redeliveryPossible: false,
     sendEmail: false
+  }
+};
+
+const P1_SCENARIOS = {
+  p1HappyPath: {
+    description: "Order passes non-allergen checks, payment responds successfully, confirmation is sent.",
+    orderValid: true,
+    itemsAvailable: true,
+    paymentResponded: true,
+    transactionSuccessful: true,
+    sendPaymentRequest: true,
+    sendFailureReport: false,
+    sendCustomerFailureNotice: false,
+    sendOrderRejectionNotice: false,
+    sendOrderConfirmation: true
+  },
+  p1InvalidOrder: {
+    description: "Order is rejected after validation.",
+    orderValid: false,
+    itemsAvailable: true,
+    paymentResponded: false,
+    transactionSuccessful: false,
+    sendPaymentRequest: false,
+    sendFailureReport: false,
+    sendCustomerFailureNotice: false,
+    sendOrderRejectionNotice: true,
+    sendOrderConfirmation: false
+  },
+  p1ItemsUnavailable: {
+    description: "Order is valid, but selected meals are not available.",
+    orderValid: true,
+    itemsAvailable: false,
+    paymentResponded: false,
+    transactionSuccessful: false,
+    sendPaymentRequest: false,
+    sendFailureReport: false,
+    sendCustomerFailureNotice: false,
+    sendOrderRejectionNotice: true,
+    sendOrderConfirmation: false
+  },
+  p1PaymentFailed: {
+    description: "Payment responds, but transaction is declined.",
+    orderValid: true,
+    itemsAvailable: true,
+    paymentResponded: true,
+    transactionSuccessful: false,
+    sendPaymentRequest: true,
+    sendFailureReport: false,
+    sendCustomerFailureNotice: true,
+    sendOrderRejectionNotice: false,
+    sendOrderConfirmation: false
+  },
+  p1PaymentTimeout: {
+    description: "Payment does not respond, so the timer/manual-resolution path is used.",
+    orderValid: true,
+    itemsAvailable: true,
+    paymentResponded: false,
+    transactionSuccessful: false,
+    sendPaymentRequest: true,
+    sendFailureReport: true,
+    sendCustomerFailureNotice: true,
+    sendOrderRejectionNotice: false,
+    sendOrderConfirmation: false
   }
 };
 
@@ -188,6 +252,18 @@ function getScenario(variables = {}) {
   return scenario;
 }
 
+function getP1Scenario(variables = {}) {
+  const requestedScenario = variables.p1Scenario || ACTIVE_P1_SCENARIO;
+  const scenario = P1_SCENARIOS[requestedScenario];
+
+  if (!scenario) {
+    console.warn(`[p1-scenario] Unknown scenario "${requestedScenario}", using "${ACTIVE_P1_SCENARIO}"`);
+    return P1_SCENARIOS[ACTIVE_P1_SCENARIO];
+  }
+
+  return scenario;
+}
+
 function createSimpleWorker(jobType, variablesFactory) {
   return zeebe.createWorker({
     taskType: jobType,
@@ -230,6 +306,13 @@ function asArray(value) {
       .map(([key]) => key);
   }
 
+  if (typeof value === "string") {
+    return value
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
   return [value];
 }
 
@@ -240,6 +323,30 @@ function asNumber(value, fallback = 0) {
 
 function roundMoney(value) {
   return Math.round((Number(value) + Number.EPSILON) * 100) / 100;
+}
+
+function money(value, currency = CURRENCY) {
+  return `${roundMoney(value).toFixed(2)} ${currency}`;
+}
+
+function hashString(value) {
+  let hash = 2166136261;
+
+  for (const char of String(value)) {
+    hash ^= char.charCodeAt(0);
+    hash = Math.imul(hash, 16777619);
+  }
+
+  return hash >>> 0;
+}
+
+function seededRandom(seed) {
+  let state = hashString(seed) || 1;
+
+  return () => {
+    state = Math.imul(1664525, state) + 1013904223;
+    return (state >>> 0) / 4294967296;
+  };
 }
 
 function normalizeMealSelection(variables = {}) {
@@ -265,10 +372,15 @@ function normalizeMealSelection(variables = {}) {
   ].filter((item) => item.mealId || item.portions > 0);
 }
 
-function buildOrderLines(variables = {}) {
+function buildOrderLines(variables = {}, options = {}) {
+  const random = options.random || (() => 0.5);
+  const randomizePrices = Boolean(options.randomizePrices);
+
   return normalizeMealSelection(variables).map((item) => {
     const catalogItem = MEAL_CATALOG[item.mealId];
-    const unitPrice = catalogItem?.price || 0;
+    const basePrice = catalogItem?.price || 0;
+    const variation = randomizePrices ? 0.85 + random() * 0.3 : 1;
+    const unitPrice = roundMoney(basePrice * variation);
     const lineTotal = roundMoney(unitPrice * item.portions);
 
     return {
@@ -276,6 +388,7 @@ function buildOrderLines(variables = {}) {
       mealId: item.mealId || null,
       mealName: catalogItem?.label || item.mealId || "Unknown meal",
       portions: item.portions,
+      basePrice,
       unitPrice,
       lineTotal
     };
@@ -311,6 +424,13 @@ function makeOrderId(variables = {}) {
   return `NP-${String(hash).padStart(10, "0").slice(0, 10)}`;
 }
 
+function normalizeAllergenName(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "-");
+}
+
 function deliveryDayFactor(deliveryDate) {
   if (!deliveryDate) {
     return 1;
@@ -342,27 +462,70 @@ function normalizeDmnAllergens(value) {
 
       return [];
     })
-    .map((allergen) => String(allergen).trim().toLowerCase())
+    .map((allergen) => normalizeAllergenName(allergen))
     .filter(Boolean);
 }
 
-function collectMealAllergens(variables = {}) {
-  const fromDmn = [
-    ...normalizeDmnAllergens(variables.breakfastAllergens),
-    ...normalizeDmnAllergens(variables.lunchAllergens),
-    ...normalizeDmnAllergens(variables.dinnerAllergens)
-  ];
+function collectMealAllergensBySlot(variables = {}) {
+  const dmnAllergensBySlot = {
+    breakfast: normalizeDmnAllergens(variables.breakfastAllergens),
+    lunch: normalizeDmnAllergens(variables.lunchAllergens),
+    dinner: normalizeDmnAllergens(variables.dinnerAllergens)
+  };
+  const hasDmnResults = Object.values(dmnAllergensBySlot).some((allergens) => allergens.length > 0);
 
-  if (fromDmn.length > 0) {
-    return [...new Set(fromDmn)];
+  if (hasDmnResults) {
+    return dmnAllergensBySlot;
   }
 
-  return [
-    ...normalizeMealSelection(variables).flatMap((item) => MEAL_CATALOG[item.mealId]?.allergens || [])
-  ];
+  return normalizeMealSelection(variables).reduce(
+    (result, item) => ({
+      ...result,
+      [item.slot]: (MEAL_CATALOG[item.mealId]?.allergens || []).map(normalizeAllergenName)
+    }),
+    { breakfast: [], lunch: [], dinner: [] }
+  );
 }
 
-function validateOrder(variables = {}) {
+function collectMealAllergens(variables = {}) {
+  return [...new Set(Object.values(collectMealAllergensBySlot(variables)).flat())];
+}
+
+function evaluateAllergenConflict(variables = {}) {
+  const customerAllergens = [...new Set(asArray(variables.customerAllergens).map(normalizeAllergenName).filter(Boolean))];
+  const mealAllergensBySlot = collectMealAllergensBySlot(variables);
+  const selectedMeals = normalizeMealSelection(variables);
+  const mealAllergens = [...new Set(Object.values(mealAllergensBySlot).flat())];
+  const customerAllergenSet = new Set(customerAllergens);
+
+  const conflictDetails = selectedMeals
+    .map((meal) => {
+      const allergens = [...new Set(mealAllergensBySlot[meal.slot] || [])];
+      const conflicts = allergens.filter((allergen) => customerAllergenSet.has(allergen));
+
+      return {
+        slot: meal.slot,
+        mealId: meal.mealId,
+        mealName: MEAL_CATALOG[meal.mealId]?.label || meal.mealId || "Unknown meal",
+        allergens,
+        conflicts
+      };
+    })
+    .filter((meal) => meal.conflicts.length > 0);
+
+  const conflictingAllergens = [...new Set(conflictDetails.flatMap((meal) => meal.conflicts))];
+
+  return {
+    allergenConflict: conflictingAllergens.length > 0,
+    customerAllergens,
+    mealAllergens,
+    conflictingAllergens,
+    allergenConflictDetails: conflictDetails,
+    allergenDecision: conflictingAllergens.length > 0 ? "ORDER_CORRECTION_REQUIRED" : "NO_CONFLICT"
+  };
+}
+
+function validateOrder(variables = {}, p1Scenario = getP1Scenario(variables)) {
   const errors = [];
   const orderLines = buildOrderLines(variables);
   const totals = calculateOrderTotal(orderLines);
@@ -404,6 +567,10 @@ function validateOrder(variables = {}) {
     }
   }
 
+  if (!p1Scenario.orderValid) {
+    errors.push(`Scenario ${variables.p1Scenario || ACTIVE_P1_SCENARIO} marks the order as invalid.`);
+  }
+
   return {
     orderValid: errors.length === 0,
     validationErrors: errors,
@@ -414,7 +581,7 @@ function validateOrder(variables = {}) {
   };
 }
 
-function checkAvailability(variables = {}) {
+function checkAvailability(variables = {}, p1Scenario = getP1Scenario(variables)) {
   const factor = deliveryDayFactor(variables.deliveryDate);
   const details = buildOrderLines(variables).map((line) => {
     const catalogItem = MEAL_CATALOG[line.mealId];
@@ -430,7 +597,24 @@ function checkAvailability(variables = {}) {
     };
   });
 
-  const unavailableItems = details.filter((item) => !item.available);
+  const unavailableItems = p1Scenario.itemsAvailable
+    ? details.filter((item) => !item.available)
+    : details.length > 0
+      ? [
+        {
+          ...details[0],
+          available: false,
+          scenarioForced: true,
+          reason: `Scenario ${variables.p1Scenario || ACTIVE_P1_SCENARIO} marks items as unavailable.`
+        }
+      ]
+      : [
+        {
+          available: false,
+          scenarioForced: true,
+          reason: `Scenario ${variables.p1Scenario || ACTIVE_P1_SCENARIO} marks items as unavailable.`
+        }
+      ];
 
   return {
     itemsAvailable: unavailableItems.length === 0,
@@ -440,10 +624,30 @@ function checkAvailability(variables = {}) {
   };
 }
 
-function decidePayment(variables = {}) {
+function decidePayment(variables = {}, p1Scenario = getP1Scenario(variables)) {
   const total = asNumber(variables.orderTotal, 0);
   const email = String(variables.customerEmail || "").toLowerCase();
   const totalPortions = asNumber(variables.totalPortions, 0);
+
+  if (!p1Scenario.paymentResponded) {
+    return {
+      p1Scenario: variables.p1Scenario || ACTIVE_P1_SCENARIO,
+      paymentResponded: false,
+      transactionSuccessful: false,
+      paymentStatus: "NO_RESPONSE",
+      paymentDecisionReason: p1Scenario.description
+    };
+  }
+
+  if (!p1Scenario.transactionSuccessful) {
+    return {
+      p1Scenario: variables.p1Scenario || ACTIVE_P1_SCENARIO,
+      paymentResponded: true,
+      transactionSuccessful: false,
+      paymentStatus: "DECLINED",
+      paymentDecisionReason: p1Scenario.description
+    };
+  }
 
   if (email.includes("timeout") || email.includes("noresponse")) {
     return {
@@ -500,6 +704,98 @@ async function publishPaymentResult(paymentRequestId, variables) {
 
   console.log(`[payment] Published "${PAYMENT_RESULT_MESSAGE}" for correlation key ${paymentRequestId}`);
   return true;
+}
+
+function buildReceipt(variables = {}) {
+  const orderId = variables.orderId || makeOrderId(variables);
+  const pricingSeed = [
+    orderId,
+    variables.customerEmail || "",
+    variables.deliveryDate || "",
+    JSON.stringify(variables.meals || {}),
+    JSON.stringify(variables.portions || {})
+  ].join("|");
+  const random = seededRandom(pricingSeed);
+  const orderLines = buildOrderLines(variables, { randomizePrices: true, random });
+  const subtotal = roundMoney(orderLines.reduce((sum, line) => sum + line.lineTotal, 0));
+  const totalPortions = orderLines.reduce((sum, line) => sum + line.portions, 0);
+  const deliveryFee = subtotal > 0 ? roundMoney(2.9 + Math.min(totalPortions, 8) * 0.35 + random() * 1.5) : 0;
+  const packagingFee = subtotal > 0 ? roundMoney(totalPortions * 0.25) : 0;
+  const discount = subtotal >= 40 ? roundMoney(subtotal * 0.05) : 0;
+  const orderTotal = roundMoney(subtotal + deliveryFee + packagingFee - discount);
+  const generatedAt = new Date().toISOString();
+  const receiptNumber = `RCPT-${generatedAt.slice(0, 10).replace(/-/g, "")}-${String(hashString(pricingSeed)).slice(0, 6)}`;
+  const receiptUrl = `https://nutriprep.example/receipts/${receiptNumber}`;
+  const customerName = variables.customerName || "customer";
+  const deliveryAddress = variables.deliveryAddress || "not specified";
+  const deliveryDate = variables.deliveryDate || "not specified";
+  const lineRows = orderLines.map(
+    (line) =>
+      `- ${line.mealName} (${line.slot}), ${line.portions} x ${money(line.unitPrice)} = ${money(line.lineTotal)}`
+  );
+  const receiptText = [
+    `Nutri Prep receipt ${receiptNumber}`,
+    "",
+    `Order: ${orderId}`,
+    `Customer: ${customerName}`,
+    `Delivery address: ${deliveryAddress}`,
+    `Delivery date: ${deliveryDate}`,
+    "",
+    "Meals:",
+    ...(lineRows.length > 0 ? lineRows : ["- No meals selected"]),
+    "",
+    `Subtotal: ${money(subtotal)}`,
+    `Delivery fee: ${money(deliveryFee)}`,
+    `Packaging fee: ${money(packagingFee)}`,
+    `Discount: -${money(discount)}`,
+    `Total: ${money(orderTotal)}`,
+    "",
+    "Thank you for ordering from Nutri Prep."
+  ].join("\n");
+  const receiptHtml = `
+<h2>Nutri Prep receipt ${receiptNumber}</h2>
+<p><strong>Order:</strong> ${orderId}<br>
+<strong>Customer:</strong> ${customerName}<br>
+<strong>Delivery address:</strong> ${deliveryAddress}<br>
+<strong>Delivery date:</strong> ${deliveryDate}</p>
+<table border="1" cellpadding="6" cellspacing="0">
+  <thead><tr><th>Meal</th><th>Slot</th><th>Portions</th><th>Unit price</th><th>Total</th></tr></thead>
+  <tbody>
+    ${orderLines
+      .map(
+        (line) =>
+          `<tr><td>${line.mealName}</td><td>${line.slot}</td><td>${line.portions}</td><td>${money(line.unitPrice)}</td><td>${money(line.lineTotal)}</td></tr>`
+      )
+      .join("")}
+  </tbody>
+</table>
+<p>
+Subtotal: ${money(subtotal)}<br>
+Delivery fee: ${money(deliveryFee)}<br>
+Packaging fee: ${money(packagingFee)}<br>
+Discount: -${money(discount)}<br>
+<strong>Total: ${money(orderTotal)}</strong>
+</p>`;
+
+  return {
+    receiptGenerated: true,
+    receiptGeneratedAt: generatedAt,
+    receiptNumber,
+    receiptUrl,
+    receiptText,
+    receiptHtml,
+    receiptEmailSubject: `Nutri Prep order ${orderId} receipt ${receiptNumber}`,
+    receiptPricingSeed: pricingSeed,
+    orderId,
+    orderLines,
+    totalPortions,
+    subtotal,
+    deliveryFee,
+    packagingFee,
+    discount,
+    orderTotal,
+    currency: CURRENCY
+  };
 }
 
 function createEmailWorker() {
@@ -618,26 +914,16 @@ const workers = [
     deliveryStatus: "FAILED"
   })),
 
-  createSimpleWorker("check-allergen-conflict", (variables) => {
-    const customerAllergens = asArray(variables.customerAllergens).map((item) => String(item).toLowerCase());
-    const mealAllergens = collectMealAllergens(variables);
-    const conflictingAllergens = [...new Set(mealAllergens.filter((allergen) => customerAllergens.includes(allergen)))];
+  createSimpleWorker("check-allergen-conflict", (variables) => evaluateAllergenConflict(variables)),
 
-    return {
-      allergenConflict: conflictingAllergens.length > 0,
-      customerAllergens,
-      mealAllergens,
-      conflictingAllergens
-    };
-  }),
+  createSimpleWorker("validate-order", (variables) => validateOrder(variables, getP1Scenario(variables))),
 
-  createSimpleWorker("validate-order", (variables) => validateOrder(variables)),
-
-  createSimpleWorker("check-item-availability", (variables) => checkAvailability(variables)),
+  createSimpleWorker("check-item-availability", (variables) => checkAvailability(variables, getP1Scenario(variables))),
 
   createSimpleWorker("process-payment", async (variables) => {
+    const p1Scenario = getP1Scenario(variables);
     const paymentRequestId = variables.paymentRequestId || `PAYREQ-${Date.now()}`;
-    const localDecision = decidePayment(variables);
+    const localDecision = decidePayment(variables, p1Scenario);
     const requestBody = {
       orderId: variables.orderId || makeOrderId(variables),
       paymentRequestId,
@@ -701,25 +987,59 @@ const workers = [
     return completedVariables;
   }),
 
-  createSimpleWorker("generate-receipt", (variables) => {
-    const orderLines = variables.orderLines || buildOrderLines(variables);
-    const totals = calculateOrderTotal(orderLines);
-    const receiptNumber = `RCPT-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-${String(Date.now()).slice(-6)}`;
+  createSimpleWorker("generate-receipt", (variables) => buildReceipt(variables)),
+
+  createSimpleWorker("send_payment_request", (variables) => {
+    const scenario = getP1Scenario(variables);
 
     return {
-      receiptGenerated: true,
-      receiptNumber,
-      receiptUrl: `https://nutriprep.example/receipts/${receiptNumber}`,
-      orderLines,
-      ...totals
+      paymentRequestSent: scenario.sendPaymentRequest,
+      paymentRequestChannel: "scenario-worker",
+      paymentRequestNote: scenario.description
     };
   }),
 
-  createSimpleWorker("send-order-confirmation", (variables) => ({
-    confirmationSent: true,
-    confirmationRecipient: variables.recipientEmail,
-    confirmationSummary: `Order ${variables.orderId} confirmed. Receipt: ${variables.receiptNumber}`
-  })),
+  createSimpleWorker("payment_failure_report", (variables) => {
+    const scenario = getP1Scenario(variables);
+
+    return {
+      paymentFailureReported: scenario.sendFailureReport,
+      paymentFailureReportRecipient: "banking-system",
+      paymentFailureReportNote: scenario.description
+    };
+  }),
+
+  createSimpleWorker("order_rejected", (variables) => {
+    const scenario = getP1Scenario(variables);
+
+    return {
+      orderRejectionNoticeSent: scenario.sendOrderRejectionNotice,
+      orderRejectionRecipient: variables.customerEmail || null,
+      orderRejectionReason: variables.validationErrors?.join("; ") || variables.unavailableItems?.[0]?.reason || scenario.description
+    };
+  }),
+
+  createSimpleWorker("payment_failure_customer", (variables) => {
+    const scenario = getP1Scenario(variables);
+
+    return {
+      paymentFailureNoticeSent: scenario.sendCustomerFailureNotice,
+      paymentFailureRecipient: variables.customerEmail || null,
+      paymentFailureReason: variables.paymentDecisionReason || scenario.description
+    };
+  }),
+
+  createSimpleWorker("send-order-confirmation", (variables) => {
+    const scenario = getP1Scenario(variables);
+
+    return {
+      confirmationSent: scenario.sendOrderConfirmation,
+      confirmationRecipient: variables.recipientEmail,
+      confirmationSubject: variables.receiptEmailSubject || `Nutri Prep order ${variables.orderId} confirmed`,
+      confirmationBody: variables.receiptText || `Order ${variables.orderId} confirmed. Receipt: ${variables.receiptNumber}`,
+      confirmationSummary: `Order ${variables.orderId} confirmed. Receipt: ${variables.receiptNumber}`
+    };
+  }),
 
   createEmailWorker()
 ];
@@ -727,8 +1047,10 @@ const workers = [
 console.log("[worker] Local Camunda workers are running.");
 console.log(`[scenario] Default active delivery scenario: ${ACTIVE_SCENARIO}`);
 console.log(`[scenario] ${SCENARIOS[ACTIVE_SCENARIO].description}`);
-console.log("[p1] Meal-ordering workers derive decisions from form variables.");
-console.log("[p1] Payment demo controls: email containing 'fail' declines; email containing 'timeout' waits for the timer path; total over 90 EUR declines.");
+console.log(`[p1-scenario] Default active P1 scenario: ${ACTIVE_P1_SCENARIO}`);
+console.log(`[p1-scenario] ${P1_SCENARIOS[ACTIVE_P1_SCENARIO].description}`);
+console.log("[p1] Evaluate allergen conflict and generate receipt derive meaningful results from the order form.");
+console.log("[p1] Other P1 message/payment workers use p1Scenario flags. Email containing 'fail' declines; email containing 'timeout' waits for the timer path; total over 90 EUR declines.");
 console.log("[worker] Listening for job types:");
 [
   "load-packed-orders",
@@ -739,8 +1061,12 @@ console.log("[worker] Listening for job types:");
   "check-allergen-conflict",
   "validate-order",
   "check-item-availability",
+  "send_payment_request",
   "process-payment",
+  "payment_failure_report",
   "generate-receipt",
+  "order_rejected",
+  "payment_failure_customer",
   "send-order-confirmation",
   "io.camunda:email:1"
 ].forEach((jobType, index) => {

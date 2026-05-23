@@ -27,9 +27,12 @@ Delivery planning scenarios:
 
 P1 meal-ordering scenarios:
 
-- `p1HappyPath`: no allergen conflict, order valid, items available, payment succeeds.
-- `p1AllergenConflict`: allergen conflict warning path.
+- `p1HappyPath`: order valid, items available, payment succeeds, confirmation worker returns sent.
 - `p1InvalidOrder`: order validation fails, order is rejected.
 - `p1ItemsUnavailable`: items unavailable, order is rejected.
 - `p1PaymentFailed`: payment result arrives, but transaction fails.
 - `p1PaymentTimeout`: bank does not respond, token goes to the timer/manual-resolution path.
+
+Allergen conflicts are not scenario-forced anymore. The `check-allergen-conflict` worker evaluates the real customer allergens from the order form against the DMN/menu allergens.
+
+The `generate-receipt` worker builds receipt text/HTML from the submitted order form and gives each selected meal a deterministic demo price variation, so the receipt is realistic but stable for the same order.

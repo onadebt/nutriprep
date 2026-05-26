@@ -1,0 +1,152 @@
+{
+  "executionPlatform": "Camunda Cloud",
+  "executionPlatformVersion": "8.9.0",
+  "exporter": {
+    "name": "Camunda Web Modeler",
+    "version": "8cca9cf"
+  },
+  "schemaVersion": 19,
+  "id": "assign-kitchen-work-form",
+  "type": "default",
+  "components": [
+    {
+      "text": "## Assign kitchen work",
+      "type": "text",
+      "layout": {
+        "row": "Row_heading",
+        "columns": null
+      },
+      "id": "Field_heading"
+    },
+    {
+      "label": "Production context",
+      "showOutline": true,
+      "type": "group",
+      "layout": {
+        "row": "Row_group",
+        "columns": 13
+      },
+      "id": "Group_Context",
+      "components": [
+        {
+          "label": "Production date",
+          "type": "textfield",
+          "key": "productionDate",
+          "disabled": true,
+          "layout": {
+            "row": "Row_ctx_1",
+            "columns": null
+          },
+          "id": "Field_productionDate"
+        },
+        {
+          "label": "Meal batches",
+          "type": "textfield",
+          "key": "mealBatchIds",
+          "disabled": true,
+          "layout": {
+            "row": "Row_ctx_2",
+            "columns": null
+          },
+          "id": "Field_mealBatchIds"
+        }
+      ]
+    },
+    {
+      "text": "Assign the kitchen team for this batch.",
+      "type": "text",
+      "layout": {
+        "row": "Row_instruction",
+        "columns": null
+      },
+      "id": "Field_instruction"
+    },
+    {
+      "label": "Shift leader",
+      "type": "select",
+      "key": "shiftLeader",
+      "values": [
+        {
+          "label": "Anna Nováková (Sous Chef)",
+          "value": "anna-novakova"
+        },
+        {
+          "label": "Peter Horváth (Chef de Partie)",
+          "value": "peter-horvath"
+        },
+        {
+          "label": "Mária Kováčiková (Sous Chef)",
+          "value": "maria-kovacikova"
+        },
+        {
+          "label": "Tomáš Mráz (Chef de Partie)",
+          "value": "tomas-mraz"
+        }
+      ],
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_shift",
+        "columns": null
+      },
+      "id": "Field_shiftLeader"
+    },
+    {
+      "label": "Team size",
+      "type": "number",
+      "key": "teamSize",
+      "validate": {
+        "required": true,
+        "min": 2,
+        "max": 5
+      },
+      "layout": {
+        "row": "Row_team",
+        "columns": null
+      },
+      "id": "Field_teamSize"
+    },
+    {
+      "label": "Priority",
+      "type": "select",
+      "key": "priority",
+      "values": [
+        {
+          "label": "Standard",
+          "value": "standard"
+        },
+        {
+          "label": "High",
+          "value": "high"
+        },
+        {
+          "label": "Urgent",
+          "value": "urgent"
+        }
+      ],
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_priority",
+        "columns": null
+      },
+      "id": "Field_priority"
+    },
+    {
+      "label": "Special instructions",
+      "type": "textarea",
+      "key": "assignmentNotes",
+      "description": "Optional notes for the team.",
+      "validate": {
+        "maxLength": 300
+      },
+      "layout": {
+        "row": "Row_notes",
+        "columns": null
+      },
+      "id": "Field_assignmentNotes"
+    }
+  ]
+}

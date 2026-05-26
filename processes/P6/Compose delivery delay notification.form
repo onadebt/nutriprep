@@ -1,0 +1,195 @@
+{
+  "executionPlatform": "Camunda Cloud",
+  "executionPlatformVersion": "8.9.0",
+  "exporter": {
+    "name": "Camunda Web Modeler",
+    "version": "8cca9cf"
+  },
+  "schemaVersion": 19,
+  "id": "delivery-delay-notification-form",
+  "components": [
+    {
+      "text": "## Compose delivery delay notification",
+      "type": "text",
+      "layout": {
+        "row": "Row_h_1",
+        "columns": null
+      },
+      "id": "Field_h_1"
+    },
+    {
+      "label": "Customer details",
+      "components": [
+        {
+          "label": "Customer name",
+          "type": "textfield",
+          "key": "customerName",
+          "layout": {
+            "row": "Row_customerName",
+            "columns": null
+          },
+          "id": "Field_customerName",
+          "disabled": true
+        },
+        {
+          "label": "Customer email",
+          "type": "textfield",
+          "key": "customerEmail",
+          "layout": {
+            "row": "Row_customerEmail",
+            "columns": null
+          },
+          "id": "Field_customerEmail",
+          "disabled": true
+        },
+        {
+          "label": "Order ID",
+          "type": "textfield",
+          "key": "orderId",
+          "layout": {
+            "row": "Row_orderId",
+            "columns": null
+          },
+          "id": "Field_orderId",
+          "disabled": true
+        }
+      ],
+      "showOutline": true,
+      "type": "group",
+      "layout": {
+        "row": "Row_g1",
+        "columns": 13
+      },
+      "id": "Group_Customer"
+    },
+    {
+      "text": "Compose the delay notification email below.",
+      "type": "text",
+      "layout": {
+        "row": "Row_h_2",
+        "columns": null
+      },
+      "id": "Field_h_2"
+    },
+    {
+      "label": "From",
+      "type": "textfield",
+      "key": "mailFrom",
+      "layout": {
+        "row": "Row_mailFrom",
+        "columns": null
+      },
+      "id": "Field_mailFrom",
+      "validate": {
+        "required": true
+      }
+    },
+    {
+      "label": "To",
+      "type": "textfield",
+      "key": "mailTo",
+      "layout": {
+        "row": "Row_mailTo",
+        "columns": null
+      },
+      "id": "Field_mailTo",
+      "disabled": true,
+      "validate": {
+        "required": true
+      }
+    },
+    {
+      "label": "Subject",
+      "type": "textfield",
+      "key": "mailSubject",
+      "layout": {
+        "row": "Row_mailSubject",
+        "columns": null
+      },
+      "id": "Field_mailSubject",
+      "validate": {
+        "required": true
+      }
+    },
+    {
+      "label": "Delay reason",
+      "values": [
+        {
+          "label": "Traffic congestion",
+          "value": "traffic"
+        },
+        {
+          "label": "Vehicle issue",
+          "value": "vehicle"
+        },
+        {
+          "label": "Weather conditions",
+          "value": "weather"
+        },
+        {
+          "label": "Driver delay",
+          "value": "driver"
+        },
+        {
+          "label": "Route optimization",
+          "value": "route"
+        },
+        {
+          "label": "Other (see message)",
+          "value": "other"
+        }
+      ],
+      "type": "select",
+      "key": "delayReason",
+      "layout": {
+        "row": "Row_delayReason",
+        "columns": null
+      },
+      "id": "Field_delayReason",
+      "validate": {
+        "required": true
+      }
+    },
+    {
+      "label": "Additional delay (minutes)",
+      "type": "number",
+      "key": "delayMinutes",
+      "layout": {
+        "row": "Row_delayMinutes",
+        "columns": null
+      },
+      "id": "Field_delayMinutes",
+      "validate": {
+        "required": true,
+        "min": 5,
+        "max": 240
+      }
+    },
+    {
+      "label": "Message to customer",
+      "type": "textarea",
+      "key": "mailBody",
+      "layout": {
+        "row": "Row_0ttatb4",
+        "columns": null
+      },
+      "id": "Field_mailBody",
+      "description": "Personal message explaining the delay.",
+      "validate": {
+        "required": true,
+        "minLength": 10
+      }
+    },
+    {
+      "label": "Submit",
+      "action": "submit",
+      "type": "button",
+      "layout": {
+        "row": "Row_mailBody",
+        "columns": null
+      },
+      "id": "Field_1p8jcpw"
+    }
+  ],
+  "type": "default"
+}

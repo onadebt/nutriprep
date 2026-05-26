@@ -1,0 +1,213 @@
+{
+  "executionPlatform": "Camunda Cloud",
+  "executionPlatformVersion": "8.9.0",
+  "exporter": {
+    "name": "Camunda Web Modeler",
+    "version": "dc1bfde"
+  },
+  "schemaVersion": 19,
+  "id": "decide-rework-action",
+  "components": [
+    {
+      "label": "Batch info",
+      "components": [
+        {
+          "label": "Batch ID",
+          "type": "textfield",
+          "key": "batchId",
+          "disabled": true,
+          "layout": {
+            "row": "Row_bi_1",
+            "columns": 8
+          },
+          "id": "Field_batchId"
+        },
+        {
+          "label": "Production date",
+          "type": "textfield",
+          "key": "productionDate",
+          "disabled": true,
+          "layout": {
+            "row": "Row_bi_1",
+            "columns": 8
+          },
+          "id": "Field_productionDate"
+        },
+        {
+          "label": "Affected meal count",
+          "type": "number",
+          "key": "affectedMeals",
+          "disabled": true,
+          "layout": {
+            "row": "Row_bi_2",
+            "columns": null
+          },
+          "id": "Field_affectedMeals"
+        },
+        {
+          "label": "Quality issue description",
+          "type": "textarea",
+          "key": "qualityIssue",
+          "disabled": true,
+          "layout": {
+            "row": "Row_bi_3",
+            "columns": null
+          },
+          "id": "Field_qualityIssue"
+        }
+      ],
+      "showOutline": true,
+      "type": "group",
+      "layout": {
+        "row": "Row_batch_info",
+        "columns": 13
+      },
+      "id": "Group_BatchInfo"
+    },
+    {
+      "text": "## Can this batch be reworked?",
+      "type": "text",
+      "layout": {
+        "row": "Row_heading",
+        "columns": null
+      },
+      "id": "Field_heading"
+    },
+    {
+      "label": "Rework decision",
+      "values": [
+        {
+          "label": "Yes — batch can be reworked",
+          "value": true
+        },
+        {
+          "label": "No — batch must be rejected",
+          "value": false
+        }
+      ],
+      "type": "radio",
+      "key": "reworkPossible",
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_decision",
+        "columns": null
+      },
+      "id": "Field_reworkDecision"
+    },
+    {
+      "label": "Rework type",
+      "values": [
+        {
+          "label": "Re-cook from existing ingredients",
+          "value": "recook"
+        },
+        {
+          "label": "Re-portion only",
+          "value": "reportion"
+        },
+        {
+          "label": "Re-package only",
+          "value": "repackage"
+        },
+        {
+          "label": "Replace damaged items",
+          "value": "replace"
+        }
+      ],
+      "type": "select",
+      "key": "reworkType",
+      "conditional": {
+        "hide": "=reworkPossible = false"
+      },
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_rework_type",
+        "columns": null
+      },
+      "id": "Field_reworkType"
+    },
+    {
+      "label": "Estimated extra time (minutes)",
+      "type": "number",
+      "key": "extraTimeMinutes",
+      "conditional": {
+        "hide": "=reworkPossible = false"
+      },
+      "validate": {
+        "required": true,
+        "min": 5,
+        "max": 120
+      },
+      "layout": {
+        "row": "Row_extra_time",
+        "columns": null
+      },
+      "id": "Field_extraTime"
+    },
+    {
+      "label": "Extra resources needed",
+      "values": [
+        {
+          "label": "Additional ingredients",
+          "value": "ingredients"
+        },
+        {
+          "label": "Extra kitchen staff",
+          "value": "staff"
+        },
+        {
+          "label": "Specialized equipment",
+          "value": "equipment"
+        },
+        {
+          "label": "Quality re-check after rework",
+          "value": "requality"
+        }
+      ],
+      "type": "checklist",
+      "key": "extraResources",
+      "conditional": {
+        "hide": "=reworkPossible = false"
+      },
+      "layout": {
+        "row": "Row_resources",
+        "columns": null
+      },
+      "id": "Field_resources"
+    },
+    {
+      "label": "Why this batch cannot be reworked",
+      "type": "textarea",
+      "key": "rejectionReason",
+      "description": "Explain why rework is not possible. Used for incident reporting.",
+      "conditional": {
+        "hide": "=reworkPossible = true"
+      },
+      "validate": {
+        "required": true,
+        "minLength": 20
+      },
+      "layout": {
+        "row": "Row_rejection",
+        "columns": null
+      },
+      "id": "Field_rejectionReason"
+    },
+    {
+      "label": "Additional notes",
+      "type": "textarea",
+      "key": "reworkNotes",
+      "description": "Any additional context for the kitchen or quality team.",
+      "layout": {
+        "row": "Row_notes",
+        "columns": null
+      },
+      "id": "Field_reworkNotes"
+    }
+  ],
+  "type": "default"
+}

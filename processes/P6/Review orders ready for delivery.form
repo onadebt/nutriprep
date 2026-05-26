@@ -1,0 +1,65 @@
+{
+  "executionPlatform": "Camunda Cloud",
+  "executionPlatformVersion": "8.9.0",
+  "exporter": {
+    "name": "Camunda Web Modeler",
+    "version": "8cca9cf"
+  },
+  "schemaVersion": 19,
+  "id": "review-orders-ready-form",
+  "components": [
+    {
+      "text": "## Review orders ready for delivery",
+      "type": "text",
+      "layout": {
+        "row": "Row_h_1",
+        "columns": null
+      },
+      "id": "Field_h_1"
+    },
+    {
+      "label": "Batch ID",
+      "type": "textfield",
+      "key": "batchId",
+      "layout": {
+        "row": "Row_batchId",
+        "columns": null
+      },
+      "id": "Field_batchId",
+      "disabled": true
+    },
+    {
+      "label": "Number of packed orders",
+      "type": "number",
+      "key": "packedOrdersCount",
+      "layout": {
+        "row": "Row_packedOrdersCount",
+        "columns": null
+      },
+      "id": "Field_packedOrdersCount",
+      "disabled": true
+    },
+    {
+      "label": "Review notes",
+      "type": "textarea",
+      "key": "reviewNotes",
+      "layout": {
+        "row": "Row_reviewNotes",
+        "columns": null
+      },
+      "id": "Field_reviewNotes",
+      "description": "Optional notes for the delivery team."
+    },
+    {
+      "label": "Submit",
+      "action": "submit",
+      "type": "button",
+      "layout": {
+        "row": "Row_165uc66",
+        "columns": null
+      },
+      "id": "Field_1s9mv1p"
+    }
+  ],
+  "type": "default"
+}

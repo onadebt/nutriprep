@@ -35,10 +35,18 @@ cd C:\...\workers
 npm start
 ```
 
-Scenarios are selected in the process start variables or in `workers/worker.js`:
+Camel can still be controlled by explicit demo scenarios selected in the process start variables or in `workers/worker.js`:
 
 - `p1HappyPath`: Camel approves payment.
 - `p1PaymentFailed`: Camel returns declined payment.
 - `p1PaymentTimeout`: Camel returns no payment response, so BPMN follows the no-response/timer path.
+
+If no failure/timeout scenario is selected, Camel decides from request data:
+
+- email contains `timeout` or `noresponse`: no payment response
+- email contains `fail` or `decline`: payment declined
+- amount above `90 EUR`: payment declined
+- more than `15` portions: payment declined
+- otherwise: payment approved
 
 No separate fake bank API is needed. The fake bank behavior is inside `PaymentRoute`.

@@ -1,0 +1,109 @@
+{
+  "executionPlatform": "Camunda Cloud",
+  "executionPlatformVersion": "8.9.0",
+  "exporter": {
+    "name": "Camunda Web Modeler",
+    "version": "8cca9cf"
+  },
+  "schemaVersion": 19,
+  "id": "review-delivery-capacity-form",
+  "components": [
+    {
+      "text": "## Review delivery capacity issue",
+      "type": "text",
+      "layout": {
+        "row": "Row_h_1",
+        "columns": null
+      },
+      "id": "Field_h_1"
+    },
+    {
+      "label": "Batch ID",
+      "type": "textfield",
+      "key": "batchId",
+      "layout": {
+        "row": "Row_batchId",
+        "columns": null
+      },
+      "id": "Field_batchId",
+      "disabled": true
+    },
+    {
+      "label": "Affected order count",
+      "type": "number",
+      "key": "affectedOrderCount",
+      "layout": {
+        "row": "Row_affectedOrderCount",
+        "columns": null
+      },
+      "id": "Field_affectedOrderCount",
+      "disabled": true
+    },
+    {
+      "text": "Routes were not feasible. Choose how to resolve the capacity issue.",
+      "type": "text",
+      "layout": {
+        "row": "Row_h_2",
+        "columns": null
+      },
+      "id": "Field_h_2"
+    },
+    {
+      "label": "Resolution action",
+      "values": [
+        {
+          "label": "Add temporary driver",
+          "value": "add-driver"
+        },
+        {
+          "label": "Reschedule batch to next day",
+          "value": "reschedule"
+        },
+        {
+          "label": "Split delivery zones differently",
+          "value": "split-zones"
+        },
+        {
+          "label": "Other (see notes)",
+          "value": "other"
+        }
+      ],
+      "type": "select",
+      "key": "capacityAction",
+      "layout": {
+        "row": "Row_capacityAction",
+        "columns": null
+      },
+      "id": "Field_capacityAction",
+      "validate": {
+        "required": true
+      }
+    },
+    {
+      "label": "Action notes",
+      "type": "textarea",
+      "key": "capacityNotes",
+      "layout": {
+        "row": "Row_capacityNotes",
+        "columns": null
+      },
+      "id": "Field_capacityNotes",
+      "description": "Describe the resolution approach.",
+      "validate": {
+        "required": true,
+        "minLength": 10
+      }
+    },
+    {
+      "label": "Submit",
+      "action": "submit",
+      "type": "button",
+      "layout": {
+        "row": "Row_0awwacl",
+        "columns": null
+      },
+      "id": "Field_17xv6ul"
+    }
+  ],
+  "type": "default"
+}

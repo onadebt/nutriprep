@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_NutritionAllergenValidation" targetNamespace="http://nutriprep.example/bpmn" exporter="Camunda Web Modeler" exporterVersion="8cca9cf" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.9.0">
+  <bpmn:collaboration id="Collaboration_NutritionAllergenValidation" name="Nutrition and Allergen Validation Process">
+    <bpmn:participant id="Participant_NutriPrep" name="Nutri Prep" processRef="Process_NutritionAllergenValidation" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_NutritionAllergenValidation" name="Nutrition and Allergen Validation Process" isExecutable="true">
+    <bpmn:laneSet id="LaneSet_NutritionAllergenValidation">
+      <bpmn:lane id="Lane_HeadNutritionist" name="Head Nutritionist">
+        <bpmn:flowNodeRef>UserTask_ApproveMealForMenu</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>UserTask_AdjustRecipeOrPortion</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>UserTask_ReviewNutritionTargets</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>UserTask_PrepareNutritionData</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>StartEvent_MealDataReady</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_FoodQualityAssistant" name="Food Quality Assistant">
+        <bpmn:flowNodeRef>Gateway_LabelsCorrect</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>UserTask_FixAllergenLabels</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>UserTask_CheckIngredientAllergens</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_OrderingSystem" name="Ordering System">
+        <bpmn:flowNodeRef>Gateway_1cj7ug8</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ServiceTask_CalculateNutritionValues</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_NutritionOk</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ServiceTask_CompareAllergensWithLabels</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ServiceTask_PublishValidatedMealData</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_0sl6qxu</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_ValidationCompleted</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:sequenceFlow id="Flow_PrepareNutritionData_To_CalculateNutritionValues" sourceRef="UserTask_PrepareNutritionData" targetRef="Gateway_1cj7ug8" />
+    <bpmn:sequenceFlow id="Flow_CalculateNutritionValues_To_ReviewNutritionTargets" sourceRef="ServiceTask_CalculateNutritionValues" targetRef="UserTask_ReviewNutritionTargets" />
+    <bpmn:sequenceFlow id="Flow_ReviewNutritionTargets_To_NutritionOk" sourceRef="UserTask_ReviewNutritionTargets" targetRef="Gateway_NutritionOk" />
+    <bpmn:sequenceFlow id="Flow_NutritionOk_No_To_AdjustRecipe" name="No" sourceRef="Gateway_NutritionOk" targetRef="UserTask_AdjustRecipeOrPortion">
+      <bpmn:conditionExpression xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="bpmn:tFormalExpression">${nutritionOk == false}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_AdjustRecipe_To_CalculateNutritionValues" sourceRef="UserTask_AdjustRecipeOrPortion" targetRef="Gateway_1cj7ug8" />
+    <bpmn:sequenceFlow id="Flow_NutritionOk_Yes_To_CheckIngredientAllergens" name="Yes" sourceRef="Gateway_NutritionOk" targetRef="UserTask_CheckIngredientAllergens">
+      <bpmn:conditionExpression xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="bpmn:tFormalExpression">${nutritionOk == true}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_CompareAllergens_To_LabelsCorrect" sourceRef="ServiceTask_CompareAllergensWithLabels" targetRef="Gateway_LabelsCorrect" />
+    <bpmn:sequenceFlow id="Flow_LabelsCorrect_No_To_FixLabels" name="No" sourceRef="Gateway_LabelsCorrect" targetRef="UserTask_FixAllergenLabels">
+      <bpmn:conditionExpression xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="bpmn:tFormalExpression">${labelsCorrect == false}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_FixLabels_To_CompareAllergens" sourceRef="UserTask_FixAllergenLabels" targetRef="Gateway_0sl6qxu" />
+    <bpmn:sequenceFlow id="Flow_LabelsCorrect_Yes_To_ApproveMeal" name="Yes" sourceRef="Gateway_LabelsCorrect" targetRef="UserTask_ApproveMealForMenu">
+      <bpmn:conditionExpression xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="bpmn:tFormalExpression">${labelsCorrect == true}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_CheckIngredientAllergens_To_CompareAllergens" sourceRef="UserTask_CheckIngredientAllergens" targetRef="Gateway_0sl6qxu" />
+    <bpmn:sequenceFlow id="Flow_ApproveMeal_To_PublishValidatedMealData" sourceRef="UserTask_ApproveMealForMenu" targetRef="ServiceTask_PublishValidatedMealData" />
+    <bpmn:sequenceFlow id="Flow_PublishValidatedMealData_To_End" sourceRef="ServiceTask_PublishValidatedMealData" targetRef="EndEvent_ValidationCompleted" />
+    <bpmn:dataObjectReference id="DataObjectReference_AllergenList" name="Allergen list" dataObjectRef="DataObject_AllergenList" />
+    <bpmn:dataObject id="DataObject_AllergenList" name="Allergen list" />
+    <bpmn:exclusiveGateway id="Gateway_LabelsCorrect" name="Allergen labels correct?">
+      <bpmn:incoming>Flow_CompareAllergens_To_LabelsCorrect</bpmn:incoming>
+      <bpmn:outgoing>Flow_LabelsCorrect_No_To_FixLabels</bpmn:outgoing>
+      <bpmn:outgoing>Flow_LabelsCorrect_Yes_To_ApproveMeal</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_11bbwee" sourceRef="Gateway_1cj7ug8" targetRef="ServiceTask_CalculateNutritionValues" />
+    <bpmn:userTask id="UserTask_FixAllergenLabels" name="Fix allergen labels">
+      <bpmn:extensionElements>
+        <zeebe:userTask />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_LabelsCorrect_No_To_FixLabels</bpmn:incoming>
+      <bpmn:outgoing>Flow_FixLabels_To_CompareAllergens</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_Start_To_PrepareNutritionData" sourceRef="StartEvent_MealDataReady" targetRef="UserTask_PrepareNutritionData" />
+    <bpmn:exclusiveGateway id="Gateway_1cj7ug8">
+      <bpmn:incoming>Flow_AdjustRecipe_To_CalculateNutritionValues</bpmn:incoming>
+      <bpmn:incoming>Flow_PrepareNutritionData_To_CalculateNutritionValues</bpmn:incoming>
+      <bpmn:outgoing>Flow_11bbwee</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="ServiceTask_CalculateNutritionValues" name="Calculate nutrition values" camunda:type="external" camunda:topic="calculate-nutrition-values">
+      <bpmn:incoming>Flow_11bbwee</bpmn:incoming>
+      <bpmn:outgoing>Flow_CalculateNutritionValues_To_ReviewNutritionTargets</bpmn:outgoing>
+      <bpmn:dataOutputAssociation id="DataOutputAssociation_0nhkcqx">
+        <bpmn:targetRef>DataObjectReference_NutritionProfile</bpmn:targetRef>
+      </bpmn:dataOutputAssociation>
+    </bpmn:serviceTask>
+    <bpmn:dataObjectReference id="DataObjectReference_NutritionProfile" name="Nutrition profile" dataObjectRef="DataObject_NutritionProfile" />
+    <bpmn:dataObject id="DataObject_NutritionProfile" name="Nutrition profile" />
+    <bpmn:exclusiveGateway id="Gateway_NutritionOk" name="Nutrition OK?">
+      <bpmn:incoming>Flow_ReviewNutritionTargets_To_NutritionOk</bpmn:incoming>
+      <bpmn:outgoing>Flow_NutritionOk_No_To_AdjustRecipe</bpmn:outgoing>
+      <bpmn:outgoing>Flow_NutritionOk_Yes_To_CheckIngredientAllergens</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="ServiceTask_CompareAllergensWithLabels" name="Compare allergens with meal labels" camunda:type="external" camunda:topic="compare-allergens-with-labels">
+      <bpmn:incoming>Flow_1qjiho0</bpmn:incoming>
+      <bpmn:outgoing>Flow_CompareAllergens_To_LabelsCorrect</bpmn:outgoing>
+      <bpmn:property id="Property_0mvvqda" name="__targetRef_placeholder" />
+      <bpmn:dataInputAssociation id="DataInputAssociation_0qhlpsi">
+        <bpmn:sourceRef>DataObjectReference_MealLabel</bpmn:sourceRef>
+        <bpmn:targetRef>Property_0mvvqda</bpmn:targetRef>
+      </bpmn:dataInputAssociation>
+    </bpmn:serviceTask>
+    <bpmn:dataObjectReference id="DataObjectReference_MealLabel" name="Meal label" dataObjectRef="DataObject_MealLabel" />
+    <bpmn:dataObject id="DataObject_MealLabel" name="Meal label" />
+    <bpmn:serviceTask id="ServiceTask_PublishValidatedMealData" name="Publish validated meal data" camunda:type="external" camunda:topic="publish-validated-meal-data">
+      <bpmn:incoming>Flow_ApproveMeal_To_PublishValidatedMealData</bpmn:incoming>
+      <bpmn:outgoing>Flow_PublishValidatedMealData_To_End</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="Gateway_0sl6qxu">
+      <bpmn:incoming>Flow_CheckIngredientAllergens_To_CompareAllergens</bpmn:incoming>
+      <bpmn:incoming>Flow_FixLabels_To_CompareAllergens</bpmn:incoming>
+      <bpmn:outgoing>Flow_1qjiho0</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_1qjiho0" sourceRef="Gateway_0sl6qxu" targetRef="ServiceTask_CompareAllergensWithLabels" />
+    <bpmn:userTask id="UserTask_CheckIngredientAllergens" name="Check ingredient allergen list">
+      <bpmn:extensionElements>
+        <zeebe:userTask />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_NutritionOk_Yes_To_CheckIngredientAllergens</bpmn:incoming>
+      <bpmn:outgoing>Flow_CheckIngredientAllergens_To_CompareAllergens</bpmn:outgoing>
+      <bpmn:property id="Property_0k9ypg2" name="__targetRef_placeholder" />
+      <bpmn:dataInputAssociation id="DataInputAssociation_02xnnmh">
+        <bpmn:sourceRef>DataObjectReference_AllergenList</bpmn:sourceRef>
+        <bpmn:targetRef>Property_0k9ypg2</bpmn:targetRef>
+      </bpmn:dataInputAssociation>
+    </bpmn:userTask>
+    <bpmn:userTask id="UserTask_ApproveMealForMenu" name="Approve meal for menu">
+      <bpmn:extensionElements>
+        <zeebe:userTask />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_LabelsCorrect_Yes_To_ApproveMeal</bpmn:incoming>
+      <bpmn:outgoing>Flow_ApproveMeal_To_PublishValidatedMealData</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="UserTask_AdjustRecipeOrPortion" name="Adjust recipe or portion">
+      <bpmn:extensionElements>
+        <zeebe:userTask />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_NutritionOk_No_To_AdjustRecipe</bpmn:incoming>
+      <bpmn:outgoing>Flow_AdjustRecipe_To_CalculateNutritionValues</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="UserTask_ReviewNutritionTargets" name="Review nutrition targets">
+      <bpmn:extensionElements>
+        <zeebe:userTask />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_CalculateNutritionValues_To_ReviewNutritionTargets</bpmn:incoming>
+      <bpmn:outgoing>Flow_ReviewNutritionTargets_To_NutritionOk</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="UserTask_PrepareNutritionData" name="Prepare meal nutrition data">
+      <bpmn:extensionElements>
+        <zeebe:userTask />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_Start_To_PrepareNutritionData</bpmn:incoming>
+      <bpmn:outgoing>Flow_PrepareNutritionData_To_CalculateNutritionValues</bpmn:outgoing>
+      <bpmn:property id="Property_0uo7hke" name="__targetRef_placeholder" />
+      <bpmn:dataInputAssociation id="DataInputAssociation_1mmg6wc">
+        <bpmn:sourceRef>DataObjectReference_Recipe</bpmn:sourceRef>
+        <bpmn:targetRef>Property_0uo7hke</bpmn:targetRef>
+      </bpmn:dataInputAssociation>
+    </bpmn:userTask>
+    <bpmn:startEvent id="StartEvent_MealDataReady" name="Meal data ready">
+      <bpmn:outgoing>Flow_Start_To_PrepareNutritionData</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:dataObjectReference id="DataObjectReference_Recipe" name="Recipe" dataObjectRef="DataObject_Recipe" />
+    <bpmn:dataObject id="DataObject_Recipe" name="Recipe" />
+    <bpmn:endEvent id="EndEvent_ValidationCompleted" name="Meal validation completed">
+      <bpmn:incoming>Flow_PublishValidatedMealData_To_End</bpmn:incoming>
+      <bpmn:terminateEventDefinition id="TerminateEventDefinition_0rmwhre" />
+    </bpmn:endEvent>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_NutritionAllergenValidation">
+    <bpmndi:BPMNPlane id="BPMNPlane_NutritionAllergenValidation" bpmnElement="Collaboration_NutritionAllergenValidation">
+      <bpmndi:BPMNShape id="Participant_NutriPrep_di" bpmnElement="Participant_NutriPrep" isHorizontal="true">
+        <dc:Bounds x="-30" y="-140" width="2020" height="900" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_OrderingSystem_di" bpmnElement="Lane_OrderingSystem" isHorizontal="true">
+        <dc:Bounds x="0" y="410" width="1990" height="350" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_FoodQualityAssistant_di" bpmnElement="Lane_FoodQualityAssistant" isHorizontal="true">
+        <dc:Bounds x="0" y="180" width="1990" height="230" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_HeadNutritionist_di" bpmnElement="Lane_HeadNutritionist" isHorizontal="true">
+        <dc:Bounds x="0" y="-140" width="1990" height="320" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DataObjectReference_AllergenList_di" bpmnElement="DataObjectReference_AllergenList">
+        <dc:Bounds x="1202" y="195" width="36" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1192" y="249" width="57" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_LabelsCorrect_di" bpmnElement="Gateway_LabelsCorrect" isMarkerVisible="true">
+        <dc:Bounds x="1345" y="265" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1285" y="264" width="73" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UserTask_FixAllergenLabels_di" bpmnElement="UserTask_FixAllergenLabels">
+        <dc:Bounds x="1480" y="240" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1cj7ug8_di" bpmnElement="Gateway_1cj7ug8" isMarkerVisible="true">
+        <dc:Bounds x="505" y="655" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_CalculateNutritionValues_di" bpmnElement="ServiceTask_CalculateNutritionValues">
+        <dc:Bounds x="465" y="520" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DataObjectReference_NutritionProfile_di" bpmnElement="DataObjectReference_NutritionProfile">
+        <dc:Bounds x="622" y="435" width="36" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="604" y="489" width="74" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_NutritionOk_di" bpmnElement="Gateway_NutritionOk" isMarkerVisible="true">
+        <dc:Bounds x="795" y="535" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="788" y="593" width="67" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_CompareAllergensWithLabels_di" bpmnElement="ServiceTask_CompareAllergensWithLabels">
+        <dc:Bounds x="1300" y="520" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DataObjectReference_MealLabel_di" bpmnElement="DataObjectReference_MealLabel">
+        <dc:Bounds x="1462" y="435" width="36" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1456" y="489" width="51" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_PublishValidatedMealData_di" bpmnElement="ServiceTask_PublishValidatedMealData">
+        <dc:Bounds x="1695" y="520" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0sl6qxu_di" bpmnElement="Gateway_0sl6qxu" isMarkerVisible="true">
+        <dc:Bounds x="1345" y="655" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UserTask_CheckIngredientAllergens_di" bpmnElement="UserTask_CheckIngredientAllergens">
+        <dc:Bounds x="1075" y="290" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UserTask_ApproveMealForMenu_di" bpmnElement="UserTask_ApproveMealForMenu">
+        <dc:Bounds x="1310" y="-20" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UserTask_AdjustRecipeOrPortion_di" bpmnElement="UserTask_AdjustRecipeOrPortion">
+        <dc:Bounds x="908" y="-20" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UserTask_ReviewNutritionTargets_di" bpmnElement="UserTask_ReviewNutritionTargets">
+        <dc:Bounds x="470" y="-20" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UserTask_PrepareNutritionData_di" bpmnElement="UserTask_PrepareNutritionData">
+        <dc:Bounds x="220" y="-20" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_MealDataReady_di" bpmnElement="StartEvent_MealDataReady">
+        <dc:Bounds x="92" y="2" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="71" y="45" width="79" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DataObjectReference_Recipe_di" bpmnElement="DataObjectReference_Recipe">
+        <dc:Bounds x="372" y="-105" width="36" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="373" y="-51" width="35" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0e6v5he_di" bpmnElement="EndEvent_ValidationCompleted">
+        <dc:Bounds x="1922" y="542" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1905" y="585" width="74" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_PrepareNutritionData_To_CalculateNutritionValues_di" bpmnElement="Flow_PrepareNutritionData_To_CalculateNutritionValues">
+        <di:waypoint x="280" y="60" />
+        <di:waypoint x="280" y="680" />
+        <di:waypoint x="505" y="680" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_CalculateNutritionValues_To_ReviewNutritionTargets_di" bpmnElement="Flow_CalculateNutritionValues_To_ReviewNutritionTargets">
+        <di:waypoint x="530" y="520" />
+        <di:waypoint x="530" y="60" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ReviewNutritionTargets_To_NutritionOk_di" bpmnElement="Flow_ReviewNutritionTargets_To_NutritionOk">
+        <di:waypoint x="590" y="20" />
+        <di:waypoint x="730" y="20" />
+        <di:waypoint x="730" y="560" />
+        <di:waypoint x="795" y="560" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_NutritionOk_No_To_AdjustRecipe_di" bpmnElement="Flow_NutritionOk_No_To_AdjustRecipe">
+        <di:waypoint x="820" y="535" />
+        <di:waypoint x="820" y="20" />
+        <di:waypoint x="908" y="20" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="832" y="477" width="15" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_AdjustRecipe_To_CalculateNutritionValues_di" bpmnElement="Flow_AdjustRecipe_To_CalculateNutritionValues">
+        <di:waypoint x="950" y="60" />
+        <di:waypoint x="950" y="680" />
+        <di:waypoint x="555" y="680" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_NutritionOk_Yes_To_CheckIngredientAllergens_di" bpmnElement="Flow_NutritionOk_Yes_To_CheckIngredientAllergens">
+        <di:waypoint x="845" y="560" />
+        <di:waypoint x="1030" y="560" />
+        <di:waypoint x="1030" y="330" />
+        <di:waypoint x="1075" y="330" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="871" y="543" width="18" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_CompareAllergens_To_LabelsCorrect_di" bpmnElement="Flow_CompareAllergens_To_LabelsCorrect">
+        <di:waypoint x="1370" y="520" />
+        <di:waypoint x="1370" y="315" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_LabelsCorrect_No_To_FixLabels_di" bpmnElement="Flow_LabelsCorrect_No_To_FixLabels">
+        <di:waypoint x="1395" y="290" />
+        <di:waypoint x="1480" y="290" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1424" y="298" width="15" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_FixLabels_To_CompareAllergens_di" bpmnElement="Flow_FixLabels_To_CompareAllergens">
+        <di:waypoint x="1540" y="320" />
+        <di:waypoint x="1540" y="680" />
+        <di:waypoint x="1400" y="680" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_LabelsCorrect_Yes_To_ApproveMeal_di" bpmnElement="Flow_LabelsCorrect_Yes_To_ApproveMeal">
+        <di:waypoint x="1370" y="265" />
+        <di:waypoint x="1370" y="60" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1381" y="185" width="18" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_CheckIngredientAllergens_To_CompareAllergens_di" bpmnElement="Flow_CheckIngredientAllergens_To_CompareAllergens">
+        <di:waypoint x="1205" y="330" />
+        <di:waypoint x="1240" y="330" />
+        <di:waypoint x="1240" y="680" />
+        <di:waypoint x="1345" y="680" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ApproveMeal_To_PublishValidatedMealData_di" bpmnElement="Flow_ApproveMeal_To_PublishValidatedMealData">
+        <di:waypoint x="1430" y="20" />
+        <di:waypoint x="1755" y="20" />
+        <di:waypoint x="1755" y="520" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_PublishValidatedMealData_To_End_di" bpmnElement="Flow_PublishValidatedMealData_To_End">
+        <di:waypoint x="1825" y="560" />
+        <di:waypoint x="1922" y="560" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_11bbwee_di" bpmnElement="Flow_11bbwee">
+        <di:waypoint x="530" y="655" />
+        <di:waypoint x="530" y="600" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Start_To_PrepareNutritionData_di" bpmnElement="Flow_Start_To_PrepareNutritionData">
+        <di:waypoint x="128" y="20" />
+        <di:waypoint x="220" y="20" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1qjiho0_di" bpmnElement="Flow_1qjiho0">
+        <di:waypoint x="1370" y="655" />
+        <di:waypoint x="1370" y="600" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DataOutputAssociation_0nhkcqx_di" bpmnElement="DataOutputAssociation_0nhkcqx">
+        <di:waypoint x="577" y="520" />
+        <di:waypoint x="622" y="481" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DataInputAssociation_0qhlpsi_di" bpmnElement="DataInputAssociation_0qhlpsi">
+        <di:waypoint x="1462" y="477" />
+        <di:waypoint x="1414" y="520" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DataInputAssociation_02xnnmh_di" bpmnElement="DataInputAssociation_02xnnmh">
+        <di:waypoint x="1202" y="239" />
+        <di:waypoint x="1155" y="290" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DataInputAssociation_1mmg6wc_di" bpmnElement="DataInputAssociation_1mmg6wc">
+        <di:waypoint x="372" y="-64" />
+        <di:waypoint x="324" y="-20" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

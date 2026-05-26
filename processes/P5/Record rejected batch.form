@@ -1,0 +1,136 @@
+{
+  "executionPlatform": "Camunda Cloud",
+  "executionPlatformVersion": "8.9.0",
+  "exporter": {
+    "name": "Camunda Web Modeler",
+    "version": "8cca9cf"
+  },
+  "schemaVersion": 19,
+  "id": "record-rejected-batch-form",
+  "type": "default",
+  "components": [
+    {
+      "text": "## Record rejected batch",
+      "type": "text",
+      "layout": {
+        "row": "Row_heading",
+        "columns": null
+      },
+      "id": "Field_heading"
+    },
+    {
+      "label": "Rejection context",
+      "showOutline": true,
+      "type": "group",
+      "layout": {
+        "row": "Row_group",
+        "columns": 13
+      },
+      "id": "Group_Context",
+      "components": [
+        {
+          "label": "Batch ID",
+          "type": "textfield",
+          "key": "batchId",
+          "disabled": true,
+          "layout": {
+            "row": "Row_ctx_1",
+            "columns": null
+          },
+          "id": "Field_batchId"
+        },
+        {
+          "label": "Affected meals",
+          "type": "number",
+          "key": "affectedMeals",
+          "disabled": true,
+          "layout": {
+            "row": "Row_ctx_2",
+            "columns": null
+          },
+          "id": "Field_affectedMeals"
+        },
+        {
+          "label": "Quality issue",
+          "type": "textarea",
+          "key": "qualityIssue",
+          "disabled": true,
+          "layout": {
+            "row": "Row_ctx_3",
+            "columns": null
+          },
+          "id": "Field_qualityIssue"
+        },
+        {
+          "label": "Rejection reason (from Kitchen Manager)",
+          "type": "textarea",
+          "key": "rejectionReason",
+          "disabled": true,
+          "layout": {
+            "row": "Row_ctx_4",
+            "columns": null
+          },
+          "id": "Field_rejectionReason"
+        }
+      ]
+    },
+    {
+      "text": "Record this incident for audit and quality reporting.",
+      "type": "text",
+      "layout": {
+        "row": "Row_instruction",
+        "columns": null
+      },
+      "id": "Field_instruction"
+    },
+    {
+      "label": "Rejection category",
+      "type": "select",
+      "key": "rejectionCategory",
+      "values": [
+        {
+          "label": "Quality issue",
+          "value": "quality"
+        },
+        {
+          "label": "Allergen contamination",
+          "value": "allergen"
+        },
+        {
+          "label": "Equipment failure",
+          "value": "equipment"
+        },
+        {
+          "label": "Ingredient spoilage",
+          "value": "spoilage"
+        },
+        {
+          "label": "Other",
+          "value": "other"
+        }
+      ],
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_category",
+        "columns": null
+      },
+      "id": "Field_rejectionCategory"
+    },
+    {
+      "label": "Estimated cost loss (EUR)",
+      "type": "number",
+      "key": "costLoss",
+      "validate": {
+        "required": true,
+        "min": 0
+      },
+      "layout": {
+        "row": "Row_cost",
+        "columns": null
+      },
+      "id": "Field_costLoss"
+    }
+  ]
+}

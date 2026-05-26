@@ -1,0 +1,52 @@
+{
+  "executionPlatform": "Camunda Cloud",
+  "executionPlatformVersion": "8.9.0",
+  "exporter": {
+    "name": "Camunda Web Modeler",
+    "version": "8cca9cf"
+  },
+  "schemaVersion": 19,
+  "id": "load-orders-delivery-form",
+  "components": [
+    {
+      "text": "## Load orders into delivery vehicle",
+      "type": "text",
+      "layout": {
+        "row": "Row_h_1",
+        "columns": null
+      },
+      "id": "Field_h_1"
+    },
+    {
+      "label": "Batch ID",
+      "type": "textfield",
+      "key": "batchId",
+      "layout": {
+        "row": "Row_batchId",
+        "columns": null
+      },
+      "id": "Field_batchId",
+      "disabled": true
+    },
+    {
+      "text": "Submit when orders are loaded into the vehicle.",
+      "type": "text",
+      "layout": {
+        "row": "Row_h_2",
+        "columns": null
+      },
+      "id": "Field_h_2"
+    },
+    {
+      "label": "Submit",
+      "action": "submit",
+      "type": "button",
+      "layout": {
+        "row": "Row_1c3qzu0",
+        "columns": null
+      },
+      "id": "Field_0yj82od"
+    }
+  ],
+  "type": "default"
+}

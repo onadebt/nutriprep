@@ -798,6 +798,70 @@ Discount: -${money(discount)}<br>
   };
 }
 
+function loadProductionPlan(variables = {}) {
+  const productionDate = variables.productionDate || new Date().toISOString().slice(0, 10);
+  const batchId = variables.batchId || `BATCH-${productionDate.replace(/-/g, "")}-001`;
+  const plannedMeals = variables.plannedMeals || [
+    { mealName: "Chicken rice bowl", portions: 80 },
+    { mealName: "Lentil curry", portions: 60 },
+    { mealName: "Protein oatmeal bowl", portions: 40 }
+  ];
+  const totalPortions = plannedMeals.reduce((sum, meal) => sum + asNumber(meal.portions, 0), 0);
+
+  return {
+    productionPlanLoaded: true,
+    productionDate,
+    batchId,
+    mealBatchIds: [batchId],
+    productionPlan: {
+      productionDate,
+      batchId,
+      plannedMeals,
+      totalPortions,
+      kitchenShift: variables.kitchenShift || "morning"
+    }
+  };
+}
+
+function generatePreparationChecklist(variables = {}) {
+  const productionPlan = variables.productionPlan || {};
+  const batchId = variables.batchId || productionPlan.batchId || `BATCH-${Date.now()}`;
+  const plannedMeals = productionPlan.plannedMeals || [];
+
+  return {
+    preparationChecklistGenerated: true,
+    preparationChecklist: {
+      batchId,
+      items: [
+        "Wash hands and clean workstation",
+        "Prepare ingredients for planned meals",
+        "Check recipe and portion instructions",
+        "Prepare labels and packaging material"
+      ],
+      plannedMeals,
+      createdAt: new Date().toISOString()
+    }
+  };
+}
+
+function updateBatchStatus(variables = {}) {
+  const qualityOk = variables.qualityOk === true;
+
+  return {
+    batchStatusUpdated: true,
+    batchStatus: qualityOk ? "READY_FOR_DISPATCH" : "NEEDS_REWORK",
+    batchStatusUpdatedAt: new Date().toISOString()
+  };
+}
+
+function markMealsReady(variables = {}) {
+  return {
+    dispatchReady: true,
+    readyAt: new Date().toISOString(),
+    dispatchBatchId: variables.batchId || null
+  };
+}
+
 function createEmailWorker() {
   return zeebe.createWorker({
     taskType: "io.camunda:email:1",
@@ -879,6 +943,14 @@ function createEmailWorker() {
 }
 
 const workers = [
+  createSimpleWorker("load-production-plan", (variables) => loadProductionPlan(variables)),
+
+  createSimpleWorker("generate-prep-checklist", (variables) => generatePreparationChecklist(variables)),
+
+  createSimpleWorker("update-batch-status", (variables) => updateBatchStatus(variables)),
+
+  createSimpleWorker("mark-meals-ready", (variables) => markMealsReady(variables)),
+
   createSimpleWorker("load-packed-orders", () => ({
     packedOrdersLoaded: true
   })),
@@ -1053,6 +1125,10 @@ console.log("[p1] Evaluate allergen conflict and generate receipt derive meaning
 console.log("[p1] Other P1 message/payment workers use p1Scenario flags. Email containing 'fail' declines; email containing 'timeout' waits for the timer path; total over 90 EUR declines.");
 console.log("[worker] Listening for job types:");
 [
+  "load-production-plan",
+  "generate-prep-checklist",
+  "update-batch-status",
+  "mark-meals-ready",
   "load-packed-orders",
   "generate_route",
   "update-dispatch-status",

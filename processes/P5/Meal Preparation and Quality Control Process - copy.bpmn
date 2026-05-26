@@ -1,0 +1,751 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:modeler="http://camunda.org/schema/modeler/1.0" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_MealPreparationQualityControl" targetNamespace="http://nutriprep.example/bpmn" exporter="Camunda Web Modeler" exporterVersion="8cca9cf" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.8.0">
+  <bpmn:collaboration id="Collaboration_MealPreparationQualityControl" name="Meal Preparation and Quality Control Process">
+    <bpmn:participant id="Participant_NutriPrep" name="Nutri Prep" processRef="Process_zgzcjpz" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_zgzcjpz" name="Meal Preparation and Quality Control Process" isExecutable="true">
+    <bpmn:laneSet id="LaneSet_MealPreparationQualityControl">
+      <bpmn:lane id="Lane_OrderingSystem" name="Ordering System">
+        <bpmn:flowNodeRef>ServiceTask_GeneratePreparationChecklist</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ServiceTask_UpdateMealBatchStatus</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ServiceTask_MarkMealsReadyForDispatch</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_MealsReadyForDispatch</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_0f5x6xe</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ServiceTask_LoadProductionPlan</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_FoodQualityAssistant" name="Food Quality Assistant">
+        <bpmn:flowNodeRef>Gateway_QualityOk</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>UserTask_DecideReworkAction</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_0avq6st</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_KitchenTeam" name="Kitchen Team">
+        <bpmn:flowNodeRef>Gateway_0tp2hmf</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>UserTask_PrepareIngredients</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>UserTask_CookMeals</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_1u0mw9z</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>UserTask_PortionAndPackMeals</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>UserTask_MoveMealsToDispatchArea</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>UserTask_ReworkMeals</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_ReworkPossible</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_KitchenManager" name="Kitchen Manager">
+        <bpmn:flowNodeRef>StartEvent_ProductionPlanReady</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>UserTask_ReviewProductionPlan</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>UserTask_AssignKitchenWork</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>UserTask_RecordRejectedBatch</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_BatchRejected</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:dataObjectReference id="DataObjectReference_ProductionPlan" name="Production plan" dataObjectRef="DataObject_ProductionPlan" />
+    <bpmn:dataObject id="DataObject_ProductionPlan" name="Production plan" />
+    <bpmn:serviceTask id="ServiceTask_GeneratePreparationChecklist" name="Generate preparation checklist" camunda:type="external" camunda:topic="generate-preparation-checklist">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="generate-prep-checklist" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=productionPlan" target="productionPlan" />
+          <zeebe:output source="=preparationChecklist" target="preparationChecklist" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0ouhh0n</bpmn:incoming>
+      <bpmn:outgoing>Flow_GenerateChecklist_To_PrepareIngredients</bpmn:outgoing>
+      <bpmn:dataOutputAssociation id="DataOutputAssociation_18jad0l">
+        <bpmn:targetRef>DataObjectReference_PreparationChecklist</bpmn:targetRef>
+      </bpmn:dataOutputAssociation>
+    </bpmn:serviceTask>
+    <bpmn:parallelGateway id="Gateway_0tp2hmf">
+      <bpmn:incoming>Flow_GenerateChecklist_To_PrepareIngredients</bpmn:incoming>
+      <bpmn:incoming>Flow_AssignKitchenWork_To_GenerateChecklist</bpmn:incoming>
+      <bpmn:outgoing>Flow_1n465n8</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:startEvent id="StartEvent_ProductionPlanReady" name="Production plan ready">
+      <bpmn:outgoing>Flow_Start_To_LoadProductionPlan</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="UserTask_ReviewProductionPlan" name="Review production plan">
+      <bpmn:extensionElements>
+        <zeebe:userTask />
+        <zeebe:formDefinition formId="review-production-plan-form" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=productionPlan" target="productionPlan" />
+          <zeebe:input source="=mealBatchIds" target="mealBatchIds" />
+          <zeebe:input source="=productionDate" target="productionDate" />
+          <zeebe:output source="=true" target="planApproved" />
+          <zeebe:output source="=reviewNotes" target="reviewNotes" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1z03l9n</bpmn:incoming>
+      <bpmn:outgoing>Flow_ReviewProductionPlan_To_AssignKitchenWork</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="UserTask_AssignKitchenWork" name="Assign kitchen work">
+      <bpmn:extensionElements>
+        <zeebe:userTask />
+        <zeebe:formDefinition formId="assign-kitchen-work-form" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=productionPlan" target="productionPlan" />
+          <zeebe:input source="=preparationChecklist" target="preparationChecklist" />
+          <zeebe:input source="=productionDate" target="productionDate" />
+          <zeebe:input source="=mealBatchIds" target="mealBatchIds" />
+          <zeebe:output source="=shiftLeader" target="shiftLeader" />
+          <zeebe:output source="=teamSize" target="teamSize" />
+          <zeebe:output source="=priority" target="priority" />
+          <zeebe:output source="=assignmentNotes" target="assignmentNotes" />
+          <zeebe:output source="=true" target="kitchenWorkAssigned" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_ReviewProductionPlan_To_AssignKitchenWork</bpmn:incoming>
+      <bpmn:outgoing>Flow_AssignKitchenWork_To_GenerateChecklist</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:dataObjectReference id="DataObjectReference_PreparationChecklist" name="Preparation checklist" dataObjectRef="DataObject_PreparationChecklist" />
+    <bpmn:dataObject id="DataObject_PreparationChecklist" name="Preparation checklist" />
+    <bpmn:userTask id="UserTask_PrepareIngredients" name="Prepare ingredients">
+      <bpmn:extensionElements>
+        <zeebe:userTask />
+        <zeebe:formDefinition formId="prepare-ingredients-form" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=preparationChecklist" target="preparationChecklist" />
+          <zeebe:input source="=batchId" target="batchId" />
+          <zeebe:output source="=true" target="ingredientsReady" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1n465n8</bpmn:incoming>
+      <bpmn:outgoing>Flow_PrepareIngredients_To_CookMeals</bpmn:outgoing>
+      <bpmn:property id="Property_1v1v1r3" name="__targetRef_placeholder" />
+      <bpmn:dataInputAssociation id="DataInputAssociation_1r15qi1">
+        <bpmn:sourceRef>DataObjectReference_Recipe</bpmn:sourceRef>
+        <bpmn:targetRef>Property_1v1v1r3</bpmn:targetRef>
+      </bpmn:dataInputAssociation>
+    </bpmn:userTask>
+    <bpmn:dataObjectReference id="DataObjectReference_Recipe" name="Recipe" dataObjectRef="DataObject_Recipe" />
+    <bpmn:dataObject id="DataObject_Recipe" name="Recipe" />
+    <bpmn:userTask id="UserTask_CookMeals" name="Cook meals">
+      <bpmn:extensionElements>
+        <zeebe:userTask />
+        <zeebe:formDefinition formId="cooking-form" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=preparationChecklist" target="preparationChecklist" />
+          <zeebe:input source="=batchId" target="batchId" />
+          <zeebe:output source="=true" target="cookingComplete" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_PrepareIngredients_To_CookMeals</bpmn:incoming>
+      <bpmn:outgoing>Flow_CookMeals_To_PortionAndPack</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Gateway_1u0mw9z">
+      <bpmn:incoming>Flow_ReworkMeals_To_PortionAndPack</bpmn:incoming>
+      <bpmn:incoming>Flow_CookMeals_To_PortionAndPack</bpmn:incoming>
+      <bpmn:outgoing>Flow_036gklg</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:dataObjectReference id="DataObjectReference_PackedMeal" name="Packed meal" dataObjectRef="DataObject_PackedMeal" />
+    <bpmn:dataObject id="DataObject_PackedMeal" name="Packed meal" />
+    <bpmn:userTask id="UserTask_PortionAndPackMeals" name="Portion and pack meals">
+      <bpmn:extensionElements>
+        <zeebe:userTask />
+        <zeebe:formDefinition formId="packaging-form" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=batchId" target="batchId" />
+          <zeebe:output source="=true" target="packedMeal" />
+          <zeebe:output source="=1" target="affectedMeals" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_036gklg</bpmn:incoming>
+      <bpmn:outgoing>Flow_PortionAndPack_To_CheckPortionFreshness</bpmn:outgoing>
+      <bpmn:dataOutputAssociation id="DataOutputAssociation_0o3ou70">
+        <bpmn:targetRef>DataObjectReference_PackedMeal</bpmn:targetRef>
+      </bpmn:dataOutputAssociation>
+    </bpmn:userTask>
+    <bpmn:subProcess id="Activity_0avq6st" name="Quality control subprocess">
+      <bpmn:incoming>Flow_PortionAndPack_To_CheckPortionFreshness</bpmn:incoming>
+      <bpmn:outgoing>Flow_1bqtqan</bpmn:outgoing>
+      <bpmn:startEvent id="Event_0wzoo88" name="Start quality control">
+        <bpmn:outgoing>Flow_1066765</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:userTask id="Activity_0b9z8qt" name="Check portions">
+        <bpmn:extensionElements>
+          <zeebe:userTask />
+          <zeebe:formDefinition formId="check-portions-form" />
+          <zeebe:ioMapping>
+            <zeebe:input source="=batchId" target="batchId" />
+            <zeebe:input source="=preparationChecklist" target="preparationChecklist" />
+            <zeebe:output source="=portionsOk" target="portionsOk" />
+            <zeebe:output source="=portionsIssue" target="portionsIssue" />
+          </zeebe:ioMapping>
+        </bpmn:extensionElements>
+        <bpmn:incoming>Flow_08tdz6t</bpmn:incoming>
+        <bpmn:outgoing>Flow_1wlnwzh</bpmn:outgoing>
+        <bpmn:property id="Property_0cbr1ke" name="__targetRef_placeholder" />
+        <bpmn:dataInputAssociation id="DataInputAssociation_15awfkj">
+          <bpmn:sourceRef>DataObjectReference_QualityChecklist</bpmn:sourceRef>
+          <bpmn:targetRef>Property_0cbr1ke</bpmn:targetRef>
+        </bpmn:dataInputAssociation>
+      </bpmn:userTask>
+      <bpmn:dataObjectReference id="DataObjectReference_QualityChecklist" name="Quality control checklist" dataObjectRef="DataObject_0q7vabr" />
+      <bpmn:dataObject id="DataObject_0q7vabr" />
+      <bpmn:endEvent id="Event_1ld47zh" name="End quality control">
+        <bpmn:incoming>Flow_00j8std</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="Flow_1066765" sourceRef="Event_0wzoo88" targetRef="Gateway_0rbts21" />
+      <bpmn:sequenceFlow id="Flow_08tdz6t" sourceRef="Gateway_0rbts21" targetRef="Activity_0b9z8qt" />
+      <bpmn:parallelGateway id="Gateway_0rbts21">
+        <bpmn:incoming>Flow_1066765</bpmn:incoming>
+        <bpmn:outgoing>Flow_08tdz6t</bpmn:outgoing>
+        <bpmn:outgoing>Flow_0jimam4</bpmn:outgoing>
+        <bpmn:outgoing>Flow_1ebwnmx</bpmn:outgoing>
+      </bpmn:parallelGateway>
+      <bpmn:sequenceFlow id="Flow_0jimam4" sourceRef="Gateway_0rbts21" targetRef="Activity_0j6uxh9" />
+      <bpmn:sequenceFlow id="Flow_1ebwnmx" sourceRef="Gateway_0rbts21" targetRef="Activity_16lkkv3" />
+      <bpmn:sequenceFlow id="Flow_002usp6" sourceRef="Activity_0j6uxh9" targetRef="Gateway_0m92acm" />
+      <bpmn:sequenceFlow id="Flow_1wlnwzh" sourceRef="Activity_0b9z8qt" targetRef="Gateway_0m92acm" />
+      <bpmn:sequenceFlow id="Flow_12ia68j" sourceRef="Activity_16lkkv3" targetRef="Gateway_0m92acm" />
+      <bpmn:sequenceFlow id="Flow_00j8std" sourceRef="Gateway_0m92acm" targetRef="Event_1ld47zh" />
+      <bpmn:parallelGateway id="Gateway_0m92acm">
+        <bpmn:incoming>Flow_002usp6</bpmn:incoming>
+        <bpmn:incoming>Flow_1wlnwzh</bpmn:incoming>
+        <bpmn:incoming>Flow_12ia68j</bpmn:incoming>
+        <bpmn:outgoing>Flow_00j8std</bpmn:outgoing>
+      </bpmn:parallelGateway>
+      <bpmn:userTask id="Activity_16lkkv3" name="Check labels and allergens">
+        <bpmn:extensionElements>
+          <zeebe:userTask />
+          <zeebe:formDefinition formId="check-labels-allergens-form" />
+          <zeebe:ioMapping>
+            <zeebe:input source="=batchId" target="batchId" />
+            <zeebe:output source="=labelsOk" target="labelsOk" />
+            <zeebe:output source="=labelsIssue" target="labelsIssue" />
+            <zeebe:output source="=portionsOk and freshnessOk and labelsOk" target="qualityOk" />
+            <zeebe:output source="=portionsIssue + &#34; | &#34; + freshnessIssue + &#34; | &#34; + labelsIssue" target="qualityIssue" />
+          </zeebe:ioMapping>
+        </bpmn:extensionElements>
+        <bpmn:incoming>Flow_1ebwnmx</bpmn:incoming>
+        <bpmn:outgoing>Flow_12ia68j</bpmn:outgoing>
+        <bpmn:property id="Property_1k75ta4" name="__targetRef_placeholder" />
+        <bpmn:dataInputAssociation id="DataInputAssociation_0rdm23v">
+          <bpmn:sourceRef>DataObjectReference_QualityChecklist</bpmn:sourceRef>
+          <bpmn:targetRef>Property_1k75ta4</bpmn:targetRef>
+        </bpmn:dataInputAssociation>
+      </bpmn:userTask>
+      <bpmn:serviceTask id="Activity_0j6uxh9" name="Check freshness" zeebe:modelerTemplate="io.camunda.connectors.HttpJson.v2" zeebe:modelerTemplateVersion="12" zeebe:modelerTemplateIcon="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHZpZXdCb3g9IjAgMCAxOCAxOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4NCjxwYXRoIGQ9Ik0xNy4wMzM1IDguOTk5OTdDMTcuMDMzNSAxMy40NDc1IDEzLjQyODEgMTcuMDUyOSA4Ljk4MDY1IDE3LjA1MjlDNC41MzMxNiAxNy4wNTI5IDAuOTI3NzY1IDEzLjQ0NzUgMC45Mjc3NjUgOC45OTk5N0MwLjkyNzc2NSA0LjU1MjQ4IDQuNTMzMTYgMC45NDcwODMgOC45ODA2NSAwLjk0NzA4M0MxMy40MjgxIDAuOTQ3MDgzIDE3LjAzMzUgNC41NTI0OCAxNy4wMzM1IDguOTk5OTdaIiBmaWxsPSIjNTA1NTYyIi8+DQo8cGF0aCBkPSJNNC45MzEyNiAxNC4xNTcxTDYuNzgxMDYgMy43MTQ3MUgxMC4xMzc1QzExLjE5MTcgMy43MTQ3MSAxMS45ODI0IDMuOTgzMjMgMTIuNTA5NSA0LjUyMDI3QzEzLjA0NjUgNS4wNDczNiAxMy4zMTUgNS43MzM1OCAxMy4zMTUgNi41Nzg5MkMxMy4zMTUgNy40NDQxNCAxMy4wNzE0IDguMTU1MjIgMTIuNTg0MSA4LjcxMjE1QzEyLjEwNjcgOS4yNTkxMyAxMS40NTUzIDkuNjM3MDUgMTAuNjI5OCA5Ljg0NTlMMTIuMDYxOSAxNC4xNTcxSDEwLjMzMTVMOS4wMzM2NCAxMC4wMjQ5SDcuMjQzNTFMNi41MTI1NCAxNC4xNTcxSDQuOTMxMjZaTTcuNDk3MTEgOC41OTI4MUg5LjI0MjQ4QzkuOTk4MzIgOC41OTI4MSAxMC41OTAxIDguNDIzNzQgMTEuMDE3NyA4LjA4NTYxQzExLjQ1NTMgNy43Mzc1MyAxMS42NzQxIDcuMjY1MTMgMTEuNjc0MSA2LjY2ODQyQzExLjY3NDEgNi4xOTEwNiAxMS41MjQ5IDUuODE4MTEgMTEuMjI2NSA1LjU0OTU5QzEwLjkyODIgNS4yNzExMyAxMC40NTU4IDUuMTMxOSA5LjgwOTM2IDUuMTMxOUg4LjEwODc0TDcuNDk3MTEgOC41OTI4MVoiIGZpbGw9IndoaXRlIi8+DQo8L3N2Zz4NCg==">
+        <bpmn:extensionElements>
+          <zeebe:ioMapping>
+            <zeebe:input source="noAuth" target="authentication.type" />
+            <zeebe:input source="GET" target="method" />
+            <zeebe:input source="https://mocka.ouim.me/mock/b8d68716/api/fresh" target="url" />
+            <zeebe:input source="=false" target="storeResponse" />
+            <zeebe:input source="=false" target="followRedirects" />
+            <zeebe:input source="=20" target="connectionTimeoutInSeconds" />
+            <zeebe:input source="=20" target="readTimeoutInSeconds" />
+          </zeebe:ioMapping>
+          <zeebe:taskDefinition type="io.camunda:http-json:1" retries="3" />
+          <zeebe:taskHeaders>
+            <zeebe:header key="elementTemplateVersion" value="12" />
+            <zeebe:header key="elementTemplateId" value="io.camunda.connectors.HttpJson.v2" />
+            <zeebe:header key="resultVariable" value="freshnessOk" />
+            <zeebe:header key="resultExpression" value="=response.body" />
+            <zeebe:header key="retryBackoff" value="PT0S" />
+          </zeebe:taskHeaders>
+        </bpmn:extensionElements>
+        <bpmn:incoming>Flow_0jimam4</bpmn:incoming>
+        <bpmn:outgoing>Flow_002usp6</bpmn:outgoing>
+        <bpmn:property id="Property_0k4dq6k" name="__targetRef_placeholder" />
+        <bpmn:dataInputAssociation id="DataInputAssociation_09z900e">
+          <bpmn:sourceRef>DataObjectReference_QualityChecklist</bpmn:sourceRef>
+          <bpmn:targetRef>Property_0k4dq6k</bpmn:targetRef>
+        </bpmn:dataInputAssociation>
+      </bpmn:serviceTask>
+    </bpmn:subProcess>
+    <bpmn:userTask id="UserTask_MoveMealsToDispatchArea" name="Move meals to dispatch area">
+      <bpmn:extensionElements>
+        <zeebe:userTask />
+        <zeebe:formDefinition formId="dispatch-area-form" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=batchId" target="batchId" />
+          <zeebe:output source="=true" target="movedToDispatch" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_UpdateBatchStatus_To_MoveMealsToDispatch</bpmn:incoming>
+      <bpmn:outgoing>Flow_MoveMealsToDispatch_To_MarkReady</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Gateway_QualityOk" name="Quality control OK?">
+      <bpmn:incoming>Flow_1bqtqan</bpmn:incoming>
+      <bpmn:outgoing>Flow_QualityOk_Yes_To_UpdateBatchStatus</bpmn:outgoing>
+      <bpmn:outgoing>Flow_QualityOk_No_To_ReworkPossible</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="UserTask_ReworkMeals" name="Rework meals">
+      <bpmn:extensionElements>
+        <zeebe:userTask />
+        <zeebe:formDefinition formId="rework-form" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=batchId" target="batchId" />
+          <zeebe:input source="=reworkType" target="reworkType" />
+          <zeebe:input source="=extraTimeMinutes" target="extraTimeMinutes" />
+          <zeebe:output source="=true" target="reworkComplete" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_ReworkPossible_Yes_To_DecideRework</bpmn:incoming>
+      <bpmn:outgoing>Flow_ReworkMeals_To_PortionAndPack</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="UserTask_DecideReworkAction" name="Decide rework action">
+      <bpmn:extensionElements>
+        <zeebe:userTask />
+        <zeebe:formDefinition formId="decide-rework-action" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=batchId " target="batchId" />
+          <zeebe:input source="=productionDate " target="productionDate" />
+          <zeebe:input source="=affectedMeals " target="affectedMeals" />
+          <zeebe:input source="=qualityIssue " target="qualityIssue" />
+          <zeebe:input source="=rejectionReason" target="rejectionReason" />
+          <zeebe:output source="=reworkPossible " target="reworkPossible" />
+          <zeebe:output source="=reworkType" target="reworkType" />
+          <zeebe:output source="=extraTimeMinutes" target="extraTimeMinutes" />
+          <zeebe:output source="=extraResources" target="extraResources" />
+          <zeebe:output source="=rejectionReason" target="rejectionReason" />
+          <zeebe:output source="=reworkNotes" target="reworkNotes" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_QualityOk_No_To_ReworkPossible</bpmn:incoming>
+      <bpmn:outgoing>Flow_DecideRework_To_ReworkMeals</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Gateway_ReworkPossible" name="Rework possible?">
+      <bpmn:incoming>Flow_DecideRework_To_ReworkMeals</bpmn:incoming>
+      <bpmn:outgoing>Flow_ReworkPossible_Yes_To_DecideRework</bpmn:outgoing>
+      <bpmn:outgoing>Flow_ReworkPossible_No_To_RecordRejectedBatch</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="UserTask_RecordRejectedBatch" name="Record rejected batch">
+      <bpmn:extensionElements>
+        <zeebe:userTask />
+        <zeebe:formDefinition formId="record-rejected-batch-form" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=batchId" target="batchId" />
+          <zeebe:input source="=affectedMeals" target="affectedMeals" />
+          <zeebe:input source="=qualityIssue" target="qualityIssue" />
+          <zeebe:input source="=rejectionReason" target="rejectionReason" />
+          <zeebe:output source="=rejectionCategory" target="rejectionCategory" />
+          <zeebe:output source="=costLoss" target="costLoss" />
+          <zeebe:output source="=true" target="incidentRecorded" />
+          <zeebe:output source="=&#34;INC-&#34; + string(batchId)" target="incidentId" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_ReworkPossible_No_To_RecordRejectedBatch</bpmn:incoming>
+      <bpmn:outgoing>Flow_RecordRejectedBatch_To_BatchRejected</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="EndEvent_BatchRejected" name="Meal batch rejected">
+      <bpmn:incoming>Flow_RecordRejectedBatch_To_BatchRejected</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:serviceTask id="ServiceTask_UpdateMealBatchStatus" name="Update meal batch status" camunda:type="external" camunda:topic="update-meal-batch-status">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="update-batch-status" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=batchId" target="batchId" />
+          <zeebe:input source="=qualityOk" target="qualityOk" />
+          <zeebe:input source="=reworkPossible" target="reworkPossible" />
+          <zeebe:output source="=batchStatus" target="batchStatus" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_QualityOk_Yes_To_UpdateBatchStatus</bpmn:incoming>
+      <bpmn:outgoing>Flow_UpdateBatchStatus_To_MoveMealsToDispatch</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="ServiceTask_MarkMealsReadyForDispatch" name="Mark meals ready for dispatch" camunda:type="external" camunda:topic="mark-meals-ready-for-dispatch">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="mark-meals-ready" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=batchId" target="batchId" />
+          <zeebe:output source="=dispatchReady" target="dispatchReady" />
+          <zeebe:output source="=readyAt" target="readyAt" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_MoveMealsToDispatch_To_MarkReady</bpmn:incoming>
+      <bpmn:outgoing>Flow_MarkReady_To_End</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="EndEvent_MealsReadyForDispatch" name="Meals ready for dispatch">
+      <bpmn:incoming>Flow_MarkReady_To_End</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:parallelGateway id="Gateway_0f5x6xe">
+      <bpmn:incoming>Flow_LoadProductionPlan_To_ReviewProductionPlan</bpmn:incoming>
+      <bpmn:outgoing>Flow_1z03l9n</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0ouhh0n</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:serviceTask id="ServiceTask_LoadProductionPlan" name="Load production plan">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="load-production-plan" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=today()" target="productionDate" />
+          <zeebe:output source="=productionPlan" target="productionPlan" />
+          <zeebe:output source="=mealBatchIds" target="mealBatchIds" />
+          <zeebe:output source="=batchId" target="batchId" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_Start_To_LoadProductionPlan</bpmn:incoming>
+      <bpmn:outgoing>Flow_LoadProductionPlan_To_ReviewProductionPlan</bpmn:outgoing>
+      <bpmn:property id="Property_0j6y85b" name="__targetRef_placeholder" />
+      <bpmn:dataInputAssociation id="DataInputAssociation_09h4rp5">
+        <bpmn:sourceRef>DataObjectReference_ProductionPlan</bpmn:sourceRef>
+        <bpmn:targetRef>Property_0j6y85b</bpmn:targetRef>
+      </bpmn:dataInputAssociation>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0ouhh0n" sourceRef="Gateway_0f5x6xe" targetRef="ServiceTask_GeneratePreparationChecklist" />
+    <bpmn:sequenceFlow id="Flow_GenerateChecklist_To_PrepareIngredients" sourceRef="ServiceTask_GeneratePreparationChecklist" targetRef="Gateway_0tp2hmf" />
+    <bpmn:sequenceFlow id="Flow_AssignKitchenWork_To_GenerateChecklist" sourceRef="UserTask_AssignKitchenWork" targetRef="Gateway_0tp2hmf" />
+    <bpmn:sequenceFlow id="Flow_1n465n8" sourceRef="Gateway_0tp2hmf" targetRef="UserTask_PrepareIngredients" />
+    <bpmn:sequenceFlow id="Flow_Start_To_LoadProductionPlan" sourceRef="StartEvent_ProductionPlanReady" targetRef="ServiceTask_LoadProductionPlan" />
+    <bpmn:sequenceFlow id="Flow_1z03l9n" sourceRef="Gateway_0f5x6xe" targetRef="UserTask_ReviewProductionPlan" />
+    <bpmn:sequenceFlow id="Flow_ReviewProductionPlan_To_AssignKitchenWork" sourceRef="UserTask_ReviewProductionPlan" targetRef="UserTask_AssignKitchenWork" />
+    <bpmn:sequenceFlow id="Flow_PrepareIngredients_To_CookMeals" sourceRef="UserTask_PrepareIngredients" targetRef="UserTask_CookMeals" />
+    <bpmn:sequenceFlow id="Flow_CookMeals_To_PortionAndPack" sourceRef="UserTask_CookMeals" targetRef="Gateway_1u0mw9z" />
+    <bpmn:sequenceFlow id="Flow_ReworkMeals_To_PortionAndPack" sourceRef="UserTask_ReworkMeals" targetRef="Gateway_1u0mw9z" />
+    <bpmn:sequenceFlow id="Flow_036gklg" sourceRef="Gateway_1u0mw9z" targetRef="UserTask_PortionAndPackMeals" />
+    <bpmn:sequenceFlow id="Flow_PortionAndPack_To_CheckPortionFreshness" sourceRef="UserTask_PortionAndPackMeals" targetRef="Activity_0avq6st" />
+    <bpmn:sequenceFlow id="Flow_1bqtqan" sourceRef="Activity_0avq6st" targetRef="Gateway_QualityOk" />
+    <bpmn:sequenceFlow id="Flow_UpdateBatchStatus_To_MoveMealsToDispatch" sourceRef="ServiceTask_UpdateMealBatchStatus" targetRef="UserTask_MoveMealsToDispatchArea" />
+    <bpmn:sequenceFlow id="Flow_MoveMealsToDispatch_To_MarkReady" sourceRef="UserTask_MoveMealsToDispatchArea" targetRef="ServiceTask_MarkMealsReadyForDispatch" />
+    <bpmn:sequenceFlow id="Flow_QualityOk_Yes_To_UpdateBatchStatus" name="Yes" sourceRef="Gateway_QualityOk" targetRef="ServiceTask_UpdateMealBatchStatus">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=qualityOk = true</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_QualityOk_No_To_ReworkPossible" name="No" sourceRef="Gateway_QualityOk" targetRef="UserTask_DecideReworkAction">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=qualityOk = false</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_ReworkPossible_Yes_To_DecideRework" name="Yes" sourceRef="Gateway_ReworkPossible" targetRef="UserTask_ReworkMeals">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=reworkPossible = true</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_DecideRework_To_ReworkMeals" sourceRef="UserTask_DecideReworkAction" targetRef="Gateway_ReworkPossible" />
+    <bpmn:sequenceFlow id="Flow_ReworkPossible_No_To_RecordRejectedBatch" name="No" sourceRef="Gateway_ReworkPossible" targetRef="UserTask_RecordRejectedBatch">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=reworkPossible = false</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_RecordRejectedBatch_To_BatchRejected" sourceRef="UserTask_RecordRejectedBatch" targetRef="EndEvent_BatchRejected" />
+    <bpmn:sequenceFlow id="Flow_MarkReady_To_End" sourceRef="ServiceTask_MarkMealsReadyForDispatch" targetRef="EndEvent_MealsReadyForDispatch" />
+    <bpmn:sequenceFlow id="Flow_LoadProductionPlan_To_ReviewProductionPlan" sourceRef="ServiceTask_LoadProductionPlan" targetRef="Gateway_0f5x6xe" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_MealPreparationQualityControl">
+    <bpmndi:BPMNPlane id="BPMNPlane_MealPreparationQualityControl" bpmnElement="Collaboration_MealPreparationQualityControl">
+      <bpmndi:BPMNShape id="Participant_NutriPrep_di" bpmnElement="Participant_NutriPrep" isHorizontal="true">
+        <dc:Bounds x="120" y="80" width="2510" height="1210" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_OrderingSystem_di" bpmnElement="Lane_OrderingSystem" isHorizontal="true">
+        <dc:Bounds x="150" y="930" width="2480" height="360" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_FoodQualityAssistant_di" bpmnElement="Lane_FoodQualityAssistant" isHorizontal="true">
+        <dc:Bounds x="150" y="550" width="2480" height="380" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_KitchenTeam_di" bpmnElement="Lane_KitchenTeam" isHorizontal="true">
+        <dc:Bounds x="150" y="270" width="2480" height="280" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_KitchenManager_di" bpmnElement="Lane_KitchenManager" isHorizontal="true">
+        <dc:Bounds x="150" y="80" width="2480" height="190" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DataObjectReference_ProductionPlan_di" bpmnElement="DataObjectReference_ProductionPlan">
+        <dc:Bounds x="272" y="1042" width="36" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="253" y="1020" width="77" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_GeneratePreparationChecklist_di" bpmnElement="ServiceTask_GeneratePreparationChecklist">
+        <dc:Bounds x="702" y="1157" width="145" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1s91zee_di" bpmnElement="Gateway_0tp2hmf">
+        <dc:Bounds x="750" y="468" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_ProductionPlanReady_di" bpmnElement="StartEvent_ProductionPlanReady">
+        <dc:Bounds x="205" y="162" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="184" y="125" width="77" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UserTask_ReviewProductionPlan_di" bpmnElement="UserTask_ReviewProductionPlan">
+        <dc:Bounds x="455" y="140" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UserTask_AssignKitchenWork_di" bpmnElement="UserTask_AssignKitchenWork">
+        <dc:Bounds x="625" y="140" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DataObjectReference_PreparationChecklist_di" bpmnElement="DataObjectReference_PreparationChecklist">
+        <dc:Bounds x="862" y="1042" width="36" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="852" y="1013" width="57" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UserTask_PrepareIngredients_di" bpmnElement="UserTask_PrepareIngredients">
+        <dc:Bounds x="855" y="453" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DataObjectReference_Recipe_di" bpmnElement="DataObjectReference_Recipe">
+        <dc:Bounds x="852" y="368" width="36" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="853" y="346" width="35" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UserTask_CookMeals_di" bpmnElement="UserTask_CookMeals">
+        <dc:Bounds x="1034" y="453" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1u0mw9z_di" bpmnElement="Gateway_1u0mw9z" isMarkerVisible="true">
+        <dc:Bounds x="1244" y="288" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DataObjectReference_PackedMeal_di" bpmnElement="DataObjectReference_PackedMeal">
+        <dc:Bounds x="1191" y="368" width="36" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1177" y="346" width="64" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UserTask_PortionAndPackMeals_di" bpmnElement="UserTask_PortionAndPackMeals">
+        <dc:Bounds x="1204" y="453" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UserTask_MoveMealsToDispatchArea_di" bpmnElement="UserTask_MoveMealsToDispatchArea">
+        <dc:Bounds x="2257" y="453" width="135" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_QualityOk_di" bpmnElement="Gateway_QualityOk" isMarkerVisible="true">
+        <dc:Bounds x="1882" y="725" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1870" y="686" width="71" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UserTask_ReworkMeals_di" bpmnElement="UserTask_ReworkMeals">
+        <dc:Bounds x="1555" y="460" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UserTask_DecideReworkAction_di" bpmnElement="UserTask_DecideReworkAction">
+        <dc:Bounds x="1985" y="710" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_ReworkPossible_di" bpmnElement="Gateway_ReworkPossible" isMarkerVisible="true">
+        <dc:Bounds x="2025" y="475" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2085" y="493" width="87" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UserTask_RecordRejectedBatch_di" bpmnElement="UserTask_RecordRejectedBatch">
+        <dc:Bounds x="1985" y="140" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_BatchRejected_di" bpmnElement="EndEvent_BatchRejected">
+        <dc:Bounds x="2202" y="162" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2193" y="208" width="54" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_UpdateMealBatchStatus_di" bpmnElement="ServiceTask_UpdateMealBatchStatus">
+        <dc:Bounds x="1985" y="1157" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_MarkMealsReadyForDispatch_di" bpmnElement="ServiceTask_MarkMealsReadyForDispatch">
+        <dc:Bounds x="2347" y="1157" width="145" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_MealsReadyForDispatch_di" bpmnElement="EndEvent_MealsReadyForDispatch">
+        <dc:Bounds x="2548" y="1179" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2529" y="1222" width="76" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1qwfdlp_di" bpmnElement="Gateway_0f5x6xe">
+        <dc:Bounds x="406" y="1172" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_LoadProductionPlan_di" bpmnElement="ServiceTask_LoadProductionPlan">
+        <dc:Bounds x="246" y="1157" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0c8zhtk_di" bpmnElement="Activity_0avq6st" isExpanded="true">
+        <dc:Bounds x="1300" y="570" width="530" height="340" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0wzoo88_di" bpmnElement="Event_0wzoo88">
+        <dc:Bounds x="1332" y="732" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1321" y="775" width="59" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0jdetzu_di" bpmnElement="Activity_0b9z8qt">
+        <dc:Bounds x="1478" y="610" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_0ga4ctl" bpmnElement="DataObjectReference_QualityChecklist">
+        <dc:Bounds x="1352" y="635" width="36" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1334" y="598" width="71" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1ld47zh_di" bpmnElement="Event_1ld47zh">
+        <dc:Bounds x="1763" y="732" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1754" y="775" width="55" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1qfe8sk_di" bpmnElement="Gateway_0rbts21">
+        <dc:Bounds x="1395" y="725" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0qsq3nq_di" bpmnElement="Gateway_0m92acm">
+        <dc:Bounds x="1665" y="725" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0ywr3p1_di" bpmnElement="Activity_16lkkv3">
+        <dc:Bounds x="1478" y="810" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_16b8ug3_di" bpmnElement="Activity_0j6uxh9">
+        <dc:Bounds x="1481" y="710" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1066765_di" bpmnElement="Flow_1066765">
+        <di:waypoint x="1368" y="750" />
+        <di:waypoint x="1395" y="750" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_08tdz6t_di" bpmnElement="Flow_08tdz6t">
+        <di:waypoint x="1420" y="725" />
+        <di:waypoint x="1420" y="650" />
+        <di:waypoint x="1478" y="650" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1wlnwzh_di" bpmnElement="Flow_1wlnwzh">
+        <di:waypoint x="1578" y="650" />
+        <di:waypoint x="1690" y="650" />
+        <di:waypoint x="1690" y="725" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_00j8std_di" bpmnElement="Flow_00j8std">
+        <di:waypoint x="1715" y="750" />
+        <di:waypoint x="1763" y="750" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0jimam4_di" bpmnElement="Flow_0jimam4">
+        <di:waypoint x="1445" y="750" />
+        <di:waypoint x="1481" y="750" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1ebwnmx_di" bpmnElement="Flow_1ebwnmx">
+        <di:waypoint x="1420" y="775" />
+        <di:waypoint x="1420" y="850" />
+        <di:waypoint x="1478" y="850" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_002usp6_di" bpmnElement="Flow_002usp6">
+        <di:waypoint x="1581" y="750" />
+        <di:waypoint x="1665" y="750" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_12ia68j_di" bpmnElement="Flow_12ia68j">
+        <di:waypoint x="1578" y="850" />
+        <di:waypoint x="1690" y="850" />
+        <di:waypoint x="1690" y="775" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0ouhh0n_di" bpmnElement="Flow_0ouhh0n">
+        <di:waypoint x="456" y="1197" />
+        <di:waypoint x="702" y="1197" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_GenerateChecklist_To_PrepareIngredients_di" bpmnElement="Flow_GenerateChecklist_To_PrepareIngredients">
+        <di:waypoint x="775" y="1157" />
+        <di:waypoint x="775" y="518" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_AssignKitchenWork_To_GenerateChecklist_di" bpmnElement="Flow_AssignKitchenWork_To_GenerateChecklist">
+        <di:waypoint x="755" y="180" />
+        <di:waypoint x="775" y="180" />
+        <di:waypoint x="775" y="468" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1n465n8_di" bpmnElement="Flow_1n465n8">
+        <di:waypoint x="800" y="493" />
+        <di:waypoint x="855" y="493" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Start_To_LoadProductionPlan_di" bpmnElement="Flow_Start_To_LoadProductionPlan">
+        <di:waypoint x="223" y="198" />
+        <di:waypoint x="223" y="1197" />
+        <di:waypoint x="246" y="1197" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1z03l9n_di" bpmnElement="Flow_1z03l9n">
+        <di:waypoint x="431" y="1172" />
+        <di:waypoint x="431" y="180" />
+        <di:waypoint x="455" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ReviewProductionPlan_To_AssignKitchenWork_di" bpmnElement="Flow_ReviewProductionPlan_To_AssignKitchenWork">
+        <di:waypoint x="585" y="180" />
+        <di:waypoint x="625" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_PrepareIngredients_To_CookMeals_di" bpmnElement="Flow_PrepareIngredients_To_CookMeals">
+        <di:waypoint x="985" y="493" />
+        <di:waypoint x="1034" y="493" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_CookMeals_To_PortionAndPack_di" bpmnElement="Flow_CookMeals_To_PortionAndPack">
+        <di:waypoint x="1099" y="453" />
+        <di:waypoint x="1099" y="313" />
+        <di:waypoint x="1244" y="313" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ReworkMeals_To_PortionAndPack_di" bpmnElement="Flow_ReworkMeals_To_PortionAndPack">
+        <di:waypoint x="1555" y="500" />
+        <di:waypoint x="1399" y="500" />
+        <di:waypoint x="1399" y="313" />
+        <di:waypoint x="1294" y="313" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_036gklg_di" bpmnElement="Flow_036gklg">
+        <di:waypoint x="1269" y="338" />
+        <di:waypoint x="1269" y="453" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_PortionAndPack_To_CheckPortionFreshness_di" bpmnElement="Flow_PortionAndPack_To_CheckPortionFreshness">
+        <di:waypoint x="1269" y="533" />
+        <di:waypoint x="1269" y="750" />
+        <di:waypoint x="1300" y="750" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1bqtqan_di" bpmnElement="Flow_1bqtqan">
+        <di:waypoint x="1830" y="750" />
+        <di:waypoint x="1882" y="750" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_UpdateBatchStatus_To_MoveMealsToDispatch_di" bpmnElement="Flow_UpdateBatchStatus_To_MoveMealsToDispatch">
+        <di:waypoint x="2115" y="1197" />
+        <di:waypoint x="2220" y="1197" />
+        <di:waypoint x="2220" y="493" />
+        <di:waypoint x="2257" y="493" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_MoveMealsToDispatch_To_MarkReady_di" bpmnElement="Flow_MoveMealsToDispatch_To_MarkReady">
+        <di:waypoint x="2392" y="493" />
+        <di:waypoint x="2420" y="493" />
+        <di:waypoint x="2420" y="1157" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_QualityOk_Yes_To_UpdateBatchStatus_di" bpmnElement="Flow_QualityOk_Yes_To_UpdateBatchStatus">
+        <di:waypoint x="1907" y="775" />
+        <di:waypoint x="1907" y="1197" />
+        <di:waypoint x="1985" y="1197" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1907" y="1212" width="18" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_QualityOk_No_To_ReworkPossible_di" bpmnElement="Flow_QualityOk_No_To_ReworkPossible">
+        <di:waypoint x="1932" y="750" />
+        <di:waypoint x="1985" y="750" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1944" y="724" width="15" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ReworkPossible_Yes_To_DecideRework_di" bpmnElement="Flow_ReworkPossible_Yes_To_DecideRework">
+        <di:waypoint x="2025" y="500" />
+        <di:waypoint x="1685" y="500" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1876" y="473" width="18" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_DecideRework_To_ReworkMeals_di" bpmnElement="Flow_DecideRework_To_ReworkMeals">
+        <di:waypoint x="2050" y="710" />
+        <di:waypoint x="2050" y="525" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ReworkPossible_No_To_RecordRejectedBatch_di" bpmnElement="Flow_ReworkPossible_No_To_RecordRejectedBatch">
+        <di:waypoint x="2050" y="475" />
+        <di:waypoint x="2050" y="220" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2022" y="363" width="15" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_RecordRejectedBatch_To_BatchRejected_di" bpmnElement="Flow_RecordRejectedBatch_To_BatchRejected">
+        <di:waypoint x="2115" y="180" />
+        <di:waypoint x="2202" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_MarkReady_To_End_di" bpmnElement="Flow_MarkReady_To_End">
+        <di:waypoint x="2492" y="1197" />
+        <di:waypoint x="2548" y="1197" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_LoadProductionPlan_To_ReviewProductionPlan_di" bpmnElement="Flow_LoadProductionPlan_To_ReviewProductionPlan">
+        <di:waypoint x="376" y="1197" />
+        <di:waypoint x="406" y="1197" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DataInputAssociation_09h4rp5_di" bpmnElement="DataInputAssociation_09h4rp5">
+        <di:waypoint x="294" y="1092" />
+        <di:waypoint x="305" y="1157" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DataOutputAssociation_18jad0l_di" bpmnElement="DataOutputAssociation_18jad0l">
+        <di:waypoint x="808" y="1157" />
+        <di:waypoint x="862" y="1092" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DataInputAssociation_1r15qi1_di" bpmnElement="DataInputAssociation_1r15qi1">
+        <di:waypoint x="888" y="417" />
+        <di:waypoint x="915" y="453" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DataOutputAssociation_0o3ou70_di" bpmnElement="DataOutputAssociation_0o3ou70">
+        <di:waypoint x="1246" y="453" />
+        <di:waypoint x="1226" y="418" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DataInputAssociation_15awfkj_di" bpmnElement="DataInputAssociation_15awfkj">
+        <di:waypoint x="1388" y="654" />
+        <di:waypoint x="1478" y="623" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DataInputAssociation_0rdm23v_di" bpmnElement="DataInputAssociation_0rdm23v">
+        <di:waypoint x="1388" y="684" />
+        <di:waypoint x="1482" y="812" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DataInputAssociation_09z900e_di" bpmnElement="DataInputAssociation_09z900e">
+        <di:waypoint x="1388" y="668" />
+        <di:waypoint x="1484" y="713" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

@@ -1,0 +1,63 @@
+{
+  "executionPlatform": "Camunda Cloud",
+  "executionPlatformVersion": "8.9.0",
+  "exporter": {
+    "name": "Camunda Web Modeler",
+    "version": "8cca9cf"
+  },
+  "schemaVersion": 19,
+  "id": "check-freshness-form",
+  "type": "default",
+  "components": [
+    {
+      "text": "## Freshness check",
+      "type": "text",
+      "layout": {
+        "row": "Row_heading_check-freshness-form",
+        "columns": null
+      },
+      "id": "Field_heading_check-freshness-form"
+    },
+    {
+      "label": "Are meals fresh?",
+      "type": "radio",
+      "key": "freshnessOk",
+      "values": [
+        {
+          "label": "Yes — meals are fresh",
+          "value": true
+        },
+        {
+          "label": "No — freshness issue detected",
+          "value": false
+        }
+      ],
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_decision_check-freshness-form",
+        "columns": null
+      },
+      "id": "Field_decision_check-freshness-form"
+    },
+    {
+      "label": "What is wrong with freshness?",
+      "type": "textarea",
+      "key": "freshnessIssue",
+      "description": "Describe the freshness issue (smell, color, texture).",
+      "conditional": {
+        "hide": "=freshnessOk = true"
+      },
+      "validate": {
+        "required": true,
+        "minLength": 10
+      },
+      "layout": {
+        "row": "Row_issue_check-freshness-form",
+        "columns": null
+      },
+      "id": "Field_issue_check-freshness-form"
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "executionPlatform": "Camunda Cloud",
+  "executionPlatformVersion": "8.9.0",
+  "exporter": {
+    "name": "Camunda Web Modeler",
+    "version": "8cca9cf"
+  },
+  "schemaVersion": 19,
+  "id": "review-production-plan-form",
+  "type": "default",
+  "components": [
+    {
+      "text": "## Review the production plan",
+      "type": "text",
+      "layout": {
+        "row": "Row_heading",
+        "columns": null
+      },
+      "id": "Field_heading"
+    },
+    {
+      "label": "Plan details",
+      "showOutline": true,
+      "type": "group",
+      "layout": {
+        "row": "Row_group",
+        "columns": 13
+      },
+      "id": "Group_PlanDetails",
+      "components": [
+        {
+          "label": "Production date",
+          "type": "textfield",
+          "key": "productionDate",
+          "disabled": true,
+          "layout": {
+            "row": "Row_pd_1",
+            "columns": null
+          },
+          "id": "Field_productionDate"
+        },
+        {
+          "label": "Meal batches",
+          "type": "textfield",
+          "key": "mealBatchIds",
+          "disabled": true,
+          "layout": {
+            "row": "Row_pd_2",
+            "columns": null
+          },
+          "id": "Field_mealBatchIds"
+        }
+      ]
+    },
+    {
+      "text": "Please review the loaded production plan. Add any notes for the kitchen team if needed.",
+      "type": "text",
+      "layout": {
+        "row": "Row_instruction",
+        "columns": null
+      },
+      "id": "Field_instruction"
+    },
+    {
+      "label": "Review notes",
+      "type": "textarea",
+      "key": "reviewNotes",
+      "description": "Optional comments for the kitchen team.",
+      "validate": {
+        "maxLength": 500
+      },
+      "layout": {
+        "row": "Row_notes",
+        "columns": null
+      },
+      "id": "Field_reviewNotes"
+    }
+  ]
+}

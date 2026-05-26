@@ -1,0 +1,75 @@
+{
+  "executionPlatform": "Camunda Cloud",
+  "executionPlatformVersion": "8.9.0",
+  "exporter": {
+    "name": "Camunda Web Modeler",
+    "version": "8cca9cf"
+  },
+  "schemaVersion": 19,
+  "id": "deliver-orders-form",
+  "components": [
+    {
+      "text": "## Deliver orders to customers",
+      "type": "text",
+      "layout": {
+        "row": "Row_heading",
+        "columns": null
+      },
+      "id": "Field_heading"
+    },
+    {
+      "label": "Delivery context",
+      "components": [
+        {
+          "label": "Batch ID",
+          "type": "textfield",
+          "key": "batchId",
+          "disabled": true,
+          "layout": {
+            "row": "Row_ctx_1",
+            "columns": null
+          },
+          "id": "Field_batchId"
+        },
+        {
+          "label": "Delivery route ID",
+          "type": "textfield",
+          "key": "deliveryRouteId",
+          "disabled": true,
+          "layout": {
+            "row": "Row_ctx_2",
+            "columns": null
+          },
+          "id": "Field_deliveryRouteId"
+        }
+      ],
+      "showOutline": true,
+      "type": "group",
+      "layout": {
+        "row": "Row_group",
+        "columns": 13
+      },
+      "id": "Group_Context"
+    },
+    {
+      "text": "Click Complete when all orders are delivered successfully.\n\n**If a critical problem occurs** (vehicle issue, accident, etc.), do NOT complete — report it via Operate to trigger the error handler.",
+      "type": "text",
+      "layout": {
+        "row": "Row_instruction",
+        "columns": null
+      },
+      "id": "Field_instruction"
+    },
+    {
+      "label": "Complete",
+      "action": "submit",
+      "type": "button",
+      "layout": {
+        "row": "Row_0ux5cd3",
+        "columns": null
+      },
+      "id": "Field_1yia2y9"
+    }
+  ],
+  "type": "default"
+}

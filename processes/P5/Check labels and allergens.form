@@ -1,0 +1,63 @@
+{
+  "executionPlatform": "Camunda Cloud",
+  "executionPlatformVersion": "8.9.0",
+  "exporter": {
+    "name": "Camunda Web Modeler",
+    "version": "8cca9cf"
+  },
+  "schemaVersion": 19,
+  "id": "check-labels-allergens-form",
+  "type": "default",
+  "components": [
+    {
+      "text": "## Labels & allergens check",
+      "type": "text",
+      "layout": {
+        "row": "Row_heading_check-labels-allergens-form",
+        "columns": null
+      },
+      "id": "Field_heading_check-labels-allergens-form"
+    },
+    {
+      "label": "Are labels and allergens correct?",
+      "type": "radio",
+      "key": "labelsOk",
+      "values": [
+        {
+          "label": "Yes — labels and allergens are correct",
+          "value": true
+        },
+        {
+          "label": "No — labels or allergens have issues",
+          "value": false
+        }
+      ],
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_decision_check-labels-allergens-form",
+        "columns": null
+      },
+      "id": "Field_decision_check-labels-allergens-form"
+    },
+    {
+      "label": "What is wrong with labels/allergens?",
+      "type": "textarea",
+      "key": "labelsIssue",
+      "description": "Describe the labeling or allergen issue.",
+      "conditional": {
+        "hide": "=labelsOk = true"
+      },
+      "validate": {
+        "required": true,
+        "minLength": 10
+      },
+      "layout": {
+        "row": "Row_issue_check-labels-allergens-form",
+        "columns": null
+      },
+      "id": "Field_issue_check-labels-allergens-form"
+    }
+  ]
+}

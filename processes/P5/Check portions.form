@@ -1,0 +1,63 @@
+{
+  "executionPlatform": "Camunda Cloud",
+  "executionPlatformVersion": "8.9.0",
+  "exporter": {
+    "name": "Camunda Web Modeler",
+    "version": "8cca9cf"
+  },
+  "schemaVersion": 19,
+  "id": "check-portions-form",
+  "type": "default",
+  "components": [
+    {
+      "text": "## Portion check",
+      "type": "text",
+      "layout": {
+        "row": "Row_heading_check-portions-form",
+        "columns": null
+      },
+      "id": "Field_heading_check-portions-form"
+    },
+    {
+      "label": "Are portions correct?",
+      "type": "radio",
+      "key": "portionsOk",
+      "values": [
+        {
+          "label": "Yes — portions OK",
+          "value": true
+        },
+        {
+          "label": "No — portions incorrect",
+          "value": false
+        }
+      ],
+      "validate": {
+        "required": true
+      },
+      "layout": {
+        "row": "Row_decision_check-portions-form",
+        "columns": null
+      },
+      "id": "Field_decision_check-portions-form"
+    },
+    {
+      "label": "What is wrong with the portions?",
+      "type": "textarea",
+      "key": "portionsIssue",
+      "description": "Describe the portion issue (size, count, presentation).",
+      "conditional": {
+        "hide": "=portionsOk = true"
+      },
+      "validate": {
+        "required": true,
+        "minLength": 10
+      },
+      "layout": {
+        "row": "Row_issue_check-portions-form",
+        "columns": null
+      },
+      "id": "Field_issue_check-portions-form"
+    }
+  ]
+}

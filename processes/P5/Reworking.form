@@ -1,0 +1,32 @@
+{
+  "executionPlatform": "Camunda Cloud",
+  "executionPlatformVersion": "8.9.0",
+  "exporter": {
+    "name": "Camunda Web Modeler",
+    "version": "dc1bfde"
+  },
+  "schemaVersion": 19,
+  "id": "rework-form",
+  "components": [
+    {
+      "text": "Submit when meals are reworked\n",
+      "type": "text",
+      "layout": {
+        "row": "Row_1k9ntd5",
+        "columns": null
+      },
+      "id": "Field_0y1l3r1"
+    },
+    {
+      "label": "Reworking done",
+      "action": "submit",
+      "type": "button",
+      "layout": {
+        "row": "Row_11mq54p",
+        "columns": null
+      },
+      "id": "Field_1vlcx16"
+    }
+  ],
+  "type": "default"
+}

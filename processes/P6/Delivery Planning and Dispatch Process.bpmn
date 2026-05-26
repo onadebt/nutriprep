@@ -1,0 +1,595 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:modeler="http://camunda.org/schema/modeler/1.0" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_DeliveryPlanningDispatch" targetNamespace="http://nutriprep.example/bpmn" exporter="Camunda Web Modeler" exporterVersion="8cca9cf" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.8.0">
+  <bpmn:collaboration id="Collaboration_DeliveryPlanningDispatch" name="Delivery Planning and Dispatch Process">
+    <bpmn:participant id="Participant_Customer" name="Customer" />
+    <bpmn:participant id="Participant_NutriPrep" name="Nutri Prep" processRef="Process_qlnyvpm" />
+    <bpmn:messageFlow id="MessageFlow_DeliveryFailedNotice" name="Delivery failed notice" sourceRef="EndEvent_DeliveryFailed" targetRef="Participant_Customer" />
+    <bpmn:messageFlow id="MessageFlow_DeliveryConfirmation" name="Delivery confirmation" sourceRef="EndEvent_DeliveryCompleted" targetRef="Participant_Customer" />
+    <bpmn:messageFlow id="MessageFlow_DeliveryDelayNotice" name="Delivery delay notice" sourceRef="Activity_01gpftq" targetRef="Participant_Customer" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_qlnyvpm" name="Delivery Planning and Dispatch Process" isExecutable="true">
+    <bpmn:laneSet id="LaneSet_DeliveryPlanningDispatch">
+      <bpmn:lane id="Lane_OrderingSystem" name="Ordering System">
+        <bpmn:flowNodeRef>ServiceTask_LoadPackedOrders</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_1k4eiy1</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ServiceTask_GenerateDeliveryRoutes</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ServiceTask_UpdateDispatchStatus</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_DeliveryCompleted</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_01gpftq</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Event_NotificationCompleted</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_DeliveryFailed</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_CustomerSupport" name="Customer Support">
+        <bpmn:flowNodeRef>Activity_07rb12m</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_DeliveryTeam" name="Delivery Team">
+        <bpmn:flowNodeRef>UserTask_DeliverOrders</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_RoutesFeasible</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>UserTask_LoadOrdersForDelivery</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_1ox5pie</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>UserTask_ContactCustomer</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_RedeliveryPossible</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Event_1en7of0</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Event_00l0ahb</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_OperationsManager" name="Operations Manager">
+        <bpmn:flowNodeRef>UserTask_ReviewDeliveryProblem</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_1mt5ckl</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>UserTask_ReviewOrdersReadyForDelivery</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>StartEvent_MealsReady</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:userTask id="UserTask_DeliverOrders" name="Deliver orders">
+      <bpmn:extensionElements>
+        <zeebe:userTask />
+        <zeebe:formDefinition formId="deliver-orders-form" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=batchId" target="batchId" />
+          <zeebe:input source="=deliveryRoute" target="deliveryRouteId" />
+          <zeebe:output source="=deliverySuccessful" target="deliverySuccessful" />
+          <zeebe:output source="=deliveryFailureReason" target="deliveryFailureReason" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0d53rqg</bpmn:incoming>
+      <bpmn:outgoing>Flow_0axfkhe</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="ServiceTask_LoadPackedOrders" name="Load packed orders" camunda:type="external" camunda:topic="load-packed-orders">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="load-packed-orders" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=batchId" target="batchId" />
+          <zeebe:output source="=packedOrders" target="packedOrders" />
+          <zeebe:output source="=packedOrdersCount" target="packedOrdersCount" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_Start_To_LoadPackedOrders</bpmn:incoming>
+      <bpmn:outgoing>Flow_LoadPackedOrders_To_ReviewOrders</bpmn:outgoing>
+      <bpmn:property id="Property_0bhiiuq" name="__targetRef_placeholder" />
+      <bpmn:dataInputAssociation id="DataInputAssociation_1avgdr7">
+        <bpmn:sourceRef>DataObjectReference_PackedOrders</bpmn:sourceRef>
+        <bpmn:targetRef>Property_0bhiiuq</bpmn:targetRef>
+      </bpmn:dataInputAssociation>
+    </bpmn:serviceTask>
+    <bpmn:dataObjectReference id="DataObjectReference_PackedOrders" name="Packed orders" dataObjectRef="DataObject_PackedOrders" />
+    <bpmn:dataObject id="DataObject_PackedOrders" name="Packed orders" />
+    <bpmn:serviceTask id="Activity_1k4eiy1" name="Check weather conditions" zeebe:modelerTemplate="io.camunda.connectors.HttpJson.v2" zeebe:modelerTemplateVersion="12" zeebe:modelerTemplateIcon="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHZpZXdCb3g9IjAgMCAxOCAxOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4NCjxwYXRoIGQ9Ik0xNy4wMzM1IDguOTk5OTdDMTcuMDMzNSAxMy40NDc1IDEzLjQyODEgMTcuMDUyOSA4Ljk4MDY1IDE3LjA1MjlDNC41MzMxNiAxNy4wNTI5IDAuOTI3NzY1IDEzLjQ0NzUgMC45Mjc3NjUgOC45OTk5N0MwLjkyNzc2NSA0LjU1MjQ4IDQuNTMzMTYgMC45NDcwODMgOC45ODA2NSAwLjk0NzA4M0MxMy40MjgxIDAuOTQ3MDgzIDE3LjAzMzUgNC41NTI0OCAxNy4wMzM1IDguOTk5OTdaIiBmaWxsPSIjNTA1NTYyIi8+DQo8cGF0aCBkPSJNNC45MzEyNiAxNC4xNTcxTDYuNzgxMDYgMy43MTQ3MUgxMC4xMzc1QzExLjE5MTcgMy43MTQ3MSAxMS45ODI0IDMuOTgzMjMgMTIuNTA5NSA0LjUyMDI3QzEzLjA0NjUgNS4wNDczNiAxMy4zMTUgNS43MzM1OCAxMy4zMTUgNi41Nzg5MkMxMy4zMTUgNy40NDQxNCAxMy4wNzE0IDguMTU1MjIgMTIuNTg0MSA4LjcxMjE1QzEyLjEwNjcgOS4yNTkxMyAxMS40NTUzIDkuNjM3MDUgMTAuNjI5OCA5Ljg0NTlMMTIuMDYxOSAxNC4xNTcxSDEwLjMzMTVMOS4wMzM2NCAxMC4wMjQ5SDcuMjQzNTFMNi41MTI1NCAxNC4xNTcxSDQuOTMxMjZaTTcuNDk3MTEgOC41OTI4MUg5LjI0MjQ4QzkuOTk4MzIgOC41OTI4MSAxMC41OTAxIDguNDIzNzQgMTEuMDE3NyA4LjA4NTYxQzExLjQ1NTMgNy43Mzc1MyAxMS42NzQxIDcuMjY1MTMgMTEuNjc0MSA2LjY2ODQyQzExLjY3NDEgNi4xOTEwNiAxMS41MjQ5IDUuODE4MTEgMTEuMjI2NSA1LjU0OTU5QzEwLjkyODIgNS4yNzExMyAxMC40NTU4IDUuMTMxOSA5LjgwOTM2IDUuMTMxOUg4LjEwODc0TDcuNDk3MTEgOC41OTI4MVoiIGZpbGw9IndoaXRlIi8+DQo8L3N2Zz4NCg==">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="io.camunda:http-json:1" retries="1" />
+        <zeebe:ioMapping>
+          <zeebe:input source="noAuth" target="authentication.type" />
+          <zeebe:input source="GET" target="method" />
+          <zeebe:input source="https://api.open-meteo.com/v1/forecast?latitude=52.52&#38;longitude=16.6&#38;current=temperature_2m,rain&#38;timezone=Europe%2FBerlin" target="url" />
+          <zeebe:input source="=false" target="storeResponse" />
+          <zeebe:input source="=false" target="followRedirects" />
+          <zeebe:input source="=20" target="connectionTimeoutInSeconds" />
+          <zeebe:input source="=20" target="readTimeoutInSeconds" />
+        </zeebe:ioMapping>
+        <zeebe:taskHeaders>
+          <zeebe:header key="elementTemplateVersion" value="12" />
+          <zeebe:header key="elementTemplateId" value="io.camunda.connectors.HttpJson.v2" />
+          <zeebe:header key="resultExpression" value="={weather:&#10;  {rain: response.body.current.rain,&#10;   temp: response.body.current.temperature_2m&#10;  }&#10;}" />
+          <zeebe:header key="retryBackoff" value="PT0S" />
+        </zeebe:taskHeaders>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_07pt5a5</bpmn:incoming>
+      <bpmn:outgoing>Flow_0gw6ren</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="Gateway_RoutesFeasible" name="Routes feasible?">
+      <bpmn:extensionElements />
+      <bpmn:incoming>Flow_GenerateRoutes_To_RoutesFeasible</bpmn:incoming>
+      <bpmn:outgoing>Flow_RoutesFeasible_No_To_ReviewProblem</bpmn:outgoing>
+      <bpmn:outgoing>Flow_RoutesFeasible_Yes_To_LoadOrders</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="ServiceTask_GenerateDeliveryRoutes" name="Generate delivery routes" camunda:type="external" camunda:topic="generate-delivery-routes">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="generate_route" />
+        <zeebe:properties />
+        <zeebe:ioMapping>
+          <zeebe:output source="=if weather.rain = 1 then false else true" target="routesFeasible" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0gw6ren</bpmn:incoming>
+      <bpmn:outgoing>Flow_GenerateRoutes_To_RoutesFeasible</bpmn:outgoing>
+      <bpmn:dataOutputAssociation id="DataOutputAssociation_1pyjm0d">
+        <bpmn:targetRef>DataObjectReference_DeliveryRoute</bpmn:targetRef>
+      </bpmn:dataOutputAssociation>
+    </bpmn:serviceTask>
+    <bpmn:dataObjectReference id="DataObjectReference_DeliveryRoute" name="Delivery route" dataObjectRef="DataObject_DeliveryRoute" />
+    <bpmn:dataObject id="DataObject_DeliveryRoute" name="Delivery route" />
+    <bpmn:serviceTask id="ServiceTask_UpdateDispatchStatus" name="Update dispatch status" camunda:type="external" camunda:topic="update-dispatch-status">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="update-dispatch-status" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=batchId" target="batchId" />
+          <zeebe:input source="=deliveryRoute" target="deliveryRoute" />
+          <zeebe:output source="=dispatchStatus" target="dispatchStatus" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_LoadOrders_To_UpdateDispatchStatus</bpmn:incoming>
+      <bpmn:outgoing>Flow_UpdateDispatchStatus_To_DeliverOrders</bpmn:outgoing>
+      <bpmn:dataOutputAssociation id="DataOutputAssociation_08dj085">
+        <bpmn:targetRef>DataObjectReference_DeliveryStatus</bpmn:targetRef>
+      </bpmn:dataOutputAssociation>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="UserTask_LoadOrdersForDelivery" name="Load orders for delivery">
+      <bpmn:extensionElements>
+        <zeebe:userTask />
+        <zeebe:formDefinition formId="load-orders-delivery-form" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=batchId" target="batchId" />
+          <zeebe:output source="=true" target="ordersLoaded" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_RoutesFeasible_Yes_To_LoadOrders</bpmn:incoming>
+      <bpmn:outgoing>Flow_LoadOrders_To_UpdateDispatchStatus</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:dataObjectReference id="DataObjectReference_DeliveryStatus" name="Delivery status" dataObjectRef="DataObject_DeliveryStatus" />
+    <bpmn:dataObject id="DataObject_DeliveryStatus" name="Delivery status" />
+    <bpmn:exclusiveGateway id="Gateway_1ox5pie">
+      <bpmn:incoming>Flow_UpdateDispatchStatus_To_DeliverOrders</bpmn:incoming>
+      <bpmn:incoming>Flow_RedeliveryPossible_Yes_To_AttemptRedelivery</bpmn:incoming>
+      <bpmn:outgoing>Flow_0d53rqg</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="UserTask_ReviewDeliveryProblem" name="Review delivery capacity issue">
+      <bpmn:extensionElements>
+        <zeebe:userTask />
+        <zeebe:formDefinition formId="review-delivery-capacity-form" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=batchId" target="batchId" />
+          <zeebe:input source="=affectedOrderCount" target="affectedOrderCount" />
+          <zeebe:output source="=capacityAction" target="capacityAction" />
+          <zeebe:output source="=capacityNotes" target="capacityNotes" />
+          <zeebe:output source="=true" target="capacityResolved" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_RoutesFeasible_No_To_ReviewProblem</bpmn:incoming>
+      <bpmn:outgoing>Flow_ReviewProblem_To_GenerateRoutes</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Gateway_1mt5ckl">
+      <bpmn:incoming>Flow_ReviewProblem_To_GenerateRoutes</bpmn:incoming>
+      <bpmn:incoming>Flow_18w4u31</bpmn:incoming>
+      <bpmn:outgoing>Flow_07pt5a5</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="UserTask_ReviewOrdersReadyForDelivery" name="Review orders ready for delivery">
+      <bpmn:extensionElements>
+        <zeebe:userTask />
+        <zeebe:formDefinition formId="review-orders-ready-form" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=batchId" target="batchId" />
+          <zeebe:input source="=packedOrdersCount" target="packedOrdersCount" />
+          <zeebe:output source="=reviewNotes" target="reviewNotes" />
+          <zeebe:output source="=true" target="ordersReviewed" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_LoadPackedOrders_To_ReviewOrders</bpmn:incoming>
+      <bpmn:outgoing>Flow_18w4u31</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:startEvent id="StartEvent_MealsReady" name="Meals ready for dispatch">
+      <bpmn:outgoing>Flow_Start_To_LoadPackedOrders</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:endEvent id="EndEvent_DeliveryCompleted" name="Delivery completed">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="delivery_completed" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0axfkhe</bpmn:incoming>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_1i7674g" />
+    </bpmn:endEvent>
+    <bpmn:userTask id="Activity_07rb12m" name="Compose delivery delay notification">
+      <bpmn:extensionElements>
+        <zeebe:userTask />
+        <zeebe:formDefinition formId="delivery-delay-notification-form" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=customerName" target="customerName" />
+          <zeebe:input source="=customerEmail" target="customerEmail" />
+          <zeebe:input source="=orderId" target="orderId" />
+          <zeebe:input source="=batchId" target="batchId" />
+          <zeebe:output source="=mailFrom" target="mailFrom" />
+          <zeebe:output source="=mailTo" target="mailTo" />
+          <zeebe:output source="=mailSubject" target="mailSubject" />
+          <zeebe:output source="=delayReason" target="delayReason" />
+          <zeebe:output source="=delayMinutes" target="delayMinutes" />
+          <zeebe:output source="=mailBody" target="mailBody" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1xgpebs</bpmn:incoming>
+      <bpmn:outgoing>Flow_12rjwu7</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="Activity_01gpftq" name="Send delivery delay notice" zeebe:modelerTemplate="io.camunda.connectors.email.v1" zeebe:modelerTemplateVersion="3" zeebe:modelerTemplateIcon="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGcgY2xpcC1wYXRoPSJ1cmwoI2NsaXAwXzkwXzI0MjApIj4KPHBhdGggZD0iTTguMzM4MzUgOS45NTM2NUwxMC4zODk0IDEyLjAxMDRMOC4zMzI2MiAxNC4wNjcyTDkuMTQ2MTYgMTQuODc1TDEyLjAxMDcgMTIuMDEwNEw5LjE0NjE2IDkuMTQ1ODNMOC4zMzgzNSA5Ljk1MzY1WiIgZmlsbD0iYmxhY2siLz4KPHBhdGggZD0iTTEyLjM0ODggOS45NTM2NUwxNC4zOTk4IDEyLjAxMDRMMTIuMzQzIDE0LjA2NzJMMTMuMTU2NiAxNC44NzVMMTYuMDIxMiAxMi4wMTA0TDEzLjE1NjYgOS4xNDU4M0wxMi4zNDg4IDkuOTUzNjVaIiBmaWxsPSJibGFjayIvPgo8cGF0aCBkPSJNMy45NzIgMTEuNDM3NUgxLjEyNTMzVjIuNzkyMTlMNy42NzM3NiA3LjMyMzk2QzcuNzY5NjcgNy4zOTA0OSA3Ljg4MzYgNy40MjYxNCA4LjAwMDMyIDcuNDI2MTRDOC4xMTcwNSA3LjQyNjE0IDguMjMwOTggNy4zOTA0OSA4LjMyNjg5IDcuMzIzOTZMMTQuODc1MyAyLjc5MjE5VjhIMTYuMDIxMlYyLjI3MDgzQzE2LjAyMTIgMS45NjY5NCAxNS45MDA0IDEuNjc1NDkgMTUuNjg1NiAxLjQ2MDYxQzE1LjQ3MDcgMS4yNDU3MiAxNS4xNzkyIDEuMTI1IDE0Ljg3NTMgMS4xMjVIMS4xMjUzM0MwLjgyMTQzMiAxLjEyNSAwLjUyOTk4NCAxLjI0NTcyIDAuMzE1MDk5IDEuNDYwNjFDMC4xMDAyMTQgMS42NzU0OSAtMC4wMjA1MDc4IDEuOTY2OTQgLTAuMDIwNTA3OCAyLjI3MDgzVjExLjQzNzVDLTAuMDIwNTA3OCAxMS43NDE0IDAuMTAwMjE0IDEyLjAzMjggMC4zMTUwOTkgMTIuMjQ3N0MwLjUyOTk4NCAxMi40NjI2IDAuODIxNDMyIDEyLjU4MzMgMS4xMjUzMyAxMi41ODMzSDMuOTcyVjExLjQzNzVaTTEzLjYxNDkgMi4yNzA4M0w4LjAwMDMyIDYuMTU1MjFMMi4zODU3NCAyLjI3MDgzSDEzLjYxNDlaIiBmaWxsPSIjRkM1RDBEIi8+CjxwYXRoIGQ9Ik00LjI4MjEgOS45NTM2NUw2LjMzMzE0IDEyLjAxMDRMNC4yNzYzNyAxNC4wNjcyTDUuMDg5OTEgMTQuODc1TDcuOTU0NDkgMTIuMDEwNEw1LjA4OTkxIDkuMTQ1ODNMNC4yODIxIDkuOTUzNjVaIiBmaWxsPSJibGFjayIvPgo8L2c+CjxkZWZzPgo8Y2xpcFBhdGggaWQ9ImNsaXAwXzkwXzI0MjAiPgo8cmVjdCB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIGZpbGw9IndoaXRlIi8+CjwvY2xpcFBhdGg+CjwvZGVmcz4KPC9zdmc+Cg==">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="io.camunda:email:1" retries="3" />
+        <zeebe:ioMapping>
+          <zeebe:input source="simple" target="authentication.type" />
+          <zeebe:input source="nutriprep@seznam.cz" target="authentication.username" />
+          <zeebe:input source="pP2-dpjc9q.cYr3" target="authentication.password" />
+          <zeebe:input source="smtp" target="protocol" />
+          <zeebe:input source="smtp.seznam.cz" target="data.smtpConfig.smtpHost" />
+          <zeebe:input source="=465" target="data.smtpConfig.smtpPort" />
+          <zeebe:input source="TLS" target="data.smtpConfig.smtpCryptographicProtocol" />
+          <zeebe:input source="sendEmailSmtp" target="data.smtpActionDiscriminator" />
+          <zeebe:input source="nutriprep@seznam.cz" target="data.smtpAction.from" />
+          <zeebe:input source="=mailTo" target="data.smtpAction.to" />
+          <zeebe:input source="=mailSubject" target="data.smtpAction.subject" />
+          <zeebe:input source="PLAIN" target="data.smtpAction.contentType" />
+          <zeebe:input source="=&#34;Dear &#34; + customerName + &#34;,\n\nYour order &#34; + orderId + &#34; is delayed by &#34; + string(delayMinutes) + &#34; minutes.\n\nReason: &#34; + delayReason + &#34;\n\n&#34; + mailBody + &#34;\n\nNutri Prep team&#34;" target="data.smtpAction.body" />
+        </zeebe:ioMapping>
+        <zeebe:taskHeaders>
+          <zeebe:header key="elementTemplateVersion" value="3" />
+          <zeebe:header key="elementTemplateId" value="io.camunda.connectors.email.v1" />
+          <zeebe:header key="retryBackoff" value="PT0S" />
+        </zeebe:taskHeaders>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_12rjwu7</bpmn:incoming>
+      <bpmn:outgoing>Flow_0jdmtiw</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="Event_NotificationCompleted" name="Customer notified of delay">
+      <bpmn:incoming>Flow_0jdmtiw</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:userTask id="UserTask_ContactCustomer" name="Contact customer">
+      <bpmn:extensionElements>
+        <zeebe:userTask />
+        <zeebe:formDefinition formId="contact-customer-form" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=customerName" target="customerName" />
+          <zeebe:input source="=customerPhone" target="customerPhone" />
+          <zeebe:input source="=customerEmail" target="customerEmail" />
+          <zeebe:input source="=orderId" target="orderId" />
+          <zeebe:output source="=contactMethod" target="contactMethod" />
+          <zeebe:output source="=customerReached" target="customerReached" />
+          <zeebe:output source="=contactNotes" target="contactNotes" />
+          <zeebe:output source="=customerReached" target="redeliveryPossible" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1y8rt93</bpmn:incoming>
+      <bpmn:outgoing>Flow_ContactCustomer_To_RedeliveryPossible</bpmn:outgoing>
+      <bpmn:property id="Property_0iq0z99" name="__targetRef_placeholder" />
+      <bpmn:dataInputAssociation id="DataInputAssociation_0b40f3y">
+        <bpmn:sourceRef>DataObjectReference_CustomerContact</bpmn:sourceRef>
+        <bpmn:targetRef>Property_0iq0z99</bpmn:targetRef>
+      </bpmn:dataInputAssociation>
+    </bpmn:userTask>
+    <bpmn:dataObjectReference id="DataObjectReference_CustomerContact" name="Customer contact details" dataObjectRef="DataObject_CustomerContact" />
+    <bpmn:dataObject id="DataObject_CustomerContact" name="Customer contact details" />
+    <bpmn:exclusiveGateway id="Gateway_RedeliveryPossible" name="Redelivery possible?">
+      <bpmn:incoming>Flow_ContactCustomer_To_RedeliveryPossible</bpmn:incoming>
+      <bpmn:outgoing>Flow_RedeliveryPossible_Yes_To_AttemptRedelivery</bpmn:outgoing>
+      <bpmn:outgoing>Flow_RedeliveryPossible_No_To_SendFailedNotice</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:boundaryEvent id="Event_1en7of0" name="60 minutes" cancelActivity="false" attachedToRef="UserTask_DeliverOrders">
+      <bpmn:outgoing>Flow_1xgpebs</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerEventDefinition_02v51i2">
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT5S</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:boundaryEvent>
+    <bpmn:boundaryEvent id="Event_00l0ahb" name="Delivery problem" attachedToRef="UserTask_DeliverOrders">
+      <bpmn:outgoing>Flow_1y8rt93</bpmn:outgoing>
+      <bpmn:errorEventDefinition id="ErrorEventDefinition_15trjc6" />
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="Flow_0d53rqg" sourceRef="Gateway_1ox5pie" targetRef="UserTask_DeliverOrders" />
+    <bpmn:sequenceFlow id="Flow_0axfkhe" sourceRef="UserTask_DeliverOrders" targetRef="EndEvent_DeliveryCompleted" />
+    <bpmn:sequenceFlow id="Flow_Start_To_LoadPackedOrders" sourceRef="StartEvent_MealsReady" targetRef="ServiceTask_LoadPackedOrders" />
+    <bpmn:sequenceFlow id="Flow_LoadPackedOrders_To_ReviewOrders" sourceRef="ServiceTask_LoadPackedOrders" targetRef="UserTask_ReviewOrdersReadyForDelivery" />
+    <bpmn:sequenceFlow id="Flow_07pt5a5" sourceRef="Gateway_1mt5ckl" targetRef="Activity_1k4eiy1" />
+    <bpmn:sequenceFlow id="Flow_0gw6ren" sourceRef="Activity_1k4eiy1" targetRef="ServiceTask_GenerateDeliveryRoutes" />
+    <bpmn:sequenceFlow id="Flow_GenerateRoutes_To_RoutesFeasible" sourceRef="ServiceTask_GenerateDeliveryRoutes" targetRef="Gateway_RoutesFeasible" />
+    <bpmn:sequenceFlow id="Flow_RoutesFeasible_Yes_To_LoadOrders" name="Yes" sourceRef="Gateway_RoutesFeasible" targetRef="UserTask_LoadOrdersForDelivery">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=routesFeasible = true</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_RoutesFeasible_No_To_ReviewProblem" name="No" sourceRef="Gateway_RoutesFeasible" targetRef="UserTask_ReviewDeliveryProblem">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=routesFeasible = false</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_LoadOrders_To_UpdateDispatchStatus" sourceRef="UserTask_LoadOrdersForDelivery" targetRef="ServiceTask_UpdateDispatchStatus" />
+    <bpmn:sequenceFlow id="Flow_UpdateDispatchStatus_To_DeliverOrders" sourceRef="ServiceTask_UpdateDispatchStatus" targetRef="Gateway_1ox5pie" />
+    <bpmn:sequenceFlow id="Flow_RedeliveryPossible_Yes_To_AttemptRedelivery" name="Yes" sourceRef="Gateway_RedeliveryPossible" targetRef="Gateway_1ox5pie">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=redeliveryPossible = true</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_ReviewProblem_To_GenerateRoutes" sourceRef="UserTask_ReviewDeliveryProblem" targetRef="Gateway_1mt5ckl" />
+    <bpmn:sequenceFlow id="Flow_18w4u31" sourceRef="UserTask_ReviewOrdersReadyForDelivery" targetRef="Gateway_1mt5ckl" />
+    <bpmn:sequenceFlow id="Flow_1xgpebs" sourceRef="Event_1en7of0" targetRef="Activity_07rb12m" />
+    <bpmn:sequenceFlow id="Flow_12rjwu7" sourceRef="Activity_07rb12m" targetRef="Activity_01gpftq" />
+    <bpmn:sequenceFlow id="Flow_0jdmtiw" sourceRef="Activity_01gpftq" targetRef="Event_NotificationCompleted" />
+    <bpmn:sequenceFlow id="Flow_1y8rt93" sourceRef="Event_00l0ahb" targetRef="UserTask_ContactCustomer" />
+    <bpmn:sequenceFlow id="Flow_ContactCustomer_To_RedeliveryPossible" sourceRef="UserTask_ContactCustomer" targetRef="Gateway_RedeliveryPossible" />
+    <bpmn:sequenceFlow id="Flow_RedeliveryPossible_No_To_SendFailedNotice" name="No" sourceRef="Gateway_RedeliveryPossible" targetRef="EndEvent_DeliveryFailed">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=redeliveryPossible = false</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:endEvent id="EndEvent_DeliveryFailed" name="Delivery failed">
+      <bpmn:extensionElements>
+        <zeebe:taskDefinition type="delivery_failed" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_RedeliveryPossible_No_To_SendFailedNotice</bpmn:incoming>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_060mgml" />
+    </bpmn:endEvent>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_DeliveryPlanningDispatch">
+    <bpmndi:BPMNPlane id="BPMNPlane_DeliveryPlanningDispatch" bpmnElement="Collaboration_DeliveryPlanningDispatch">
+      <bpmndi:BPMNShape id="Participant_Customer_di" bpmnElement="Participant_Customer" isHorizontal="true">
+        <dc:Bounds x="5" y="1009" width="2080" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Participant_NutriPrep_di" bpmnElement="Participant_NutriPrep" isHorizontal="true">
+        <dc:Bounds x="5" y="-90" width="2080" height="990" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_OperationsManager_di" bpmnElement="Lane_OperationsManager" isHorizontal="true">
+        <dc:Bounds x="35" y="-90" width="2050" height="170" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_DeliveryTeam_di" bpmnElement="Lane_DeliveryTeam" isHorizontal="true">
+        <dc:Bounds x="35" y="80" width="2050" height="280" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_CustomerSupport_di" bpmnElement="Lane_CustomerSupport" isHorizontal="true">
+        <dc:Bounds x="35" y="360" width="2050" height="225" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_OrderingSystem_di" bpmnElement="Lane_OrderingSystem" isHorizontal="true">
+        <dc:Bounds x="35" y="585" width="2050" height="315" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UserTask_DeliverOrders_di" bpmnElement="UserTask_DeliverOrders">
+        <dc:Bounds x="1160" y="190" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_LoadPackedOrders_di" bpmnElement="ServiceTask_LoadPackedOrders">
+        <dc:Bounds x="170" y="752" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DataObjectReference_PackedOrders_di" bpmnElement="DataObjectReference_PackedOrders">
+        <dc:Bounds x="267" y="655" width="36" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="250" y="633" width="71" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0zht4co_di" bpmnElement="Activity_1k4eiy1">
+        <dc:Bounds x="440" y="752" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_RoutesFeasible_di" bpmnElement="Gateway_RoutesFeasible" isMarkerVisible="true">
+        <dc:Bounds x="642" y="205" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="550" y="223" width="82" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_GenerateDeliveryRoutes_di" bpmnElement="ServiceTask_GenerateDeliveryRoutes">
+        <dc:Bounds x="597" y="752" width="140" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DataObjectReference_DeliveryRoute_di" bpmnElement="DataObjectReference_DeliveryRoute">
+        <dc:Bounds x="727" y="655" width="36" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="711" y="631" width="68" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_UpdateDispatchStatus_di" bpmnElement="ServiceTask_UpdateDispatchStatus">
+        <dc:Bounds x="860" y="752" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UserTask_LoadOrdersForDelivery_di" bpmnElement="UserTask_LoadOrdersForDelivery">
+        <dc:Bounds x="752" y="190" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DataObjectReference_DeliveryStatus_di" bpmnElement="DataObjectReference_DeliveryStatus">
+        <dc:Bounds x="977" y="655" width="36" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="959" y="633" width="73" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1ox5pie_di" bpmnElement="Gateway_1ox5pie" isMarkerVisible="true">
+        <dc:Bounds x="1040" y="205" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UserTask_ReviewDeliveryProblem_di" bpmnElement="UserTask_ReviewDeliveryProblem">
+        <dc:Bounds x="597" y="-45" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1mt5ckl_di" bpmnElement="Gateway_1mt5ckl" isMarkerVisible="true">
+        <dc:Bounds x="465" y="-30" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UserTask_ReviewOrdersReadyForDelivery_di" bpmnElement="UserTask_ReviewOrdersReadyForDelivery">
+        <dc:Bounds x="275" y="-45" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_MealsReady_di" bpmnElement="StartEvent_MealsReady">
+        <dc:Bounds x="108" y="-23" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="88" y="-60" width="76" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_16hbrdg_di" bpmnElement="EndEvent_DeliveryCompleted">
+        <dc:Bounds x="1167" y="774" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1106" y="778" width="51" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1eswjou_di" bpmnElement="Activity_07rb12m">
+        <dc:Bounds x="1240" y="450" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_15ejnfz_di" bpmnElement="Activity_01gpftq">
+        <dc:Bounds x="1240" y="640" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0264a52_di" bpmnElement="Event_NotificationCompleted">
+        <dc:Bounds x="1447" y="662" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1422" y="705" width="87" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UserTask_ContactCustomer_di" bpmnElement="UserTask_ContactCustomer">
+        <dc:Bounds x="1570" y="150" width="130" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DataObjectReference_CustomerContact_di" bpmnElement="DataObjectReference_CustomerContact">
+        <dc:Bounds x="1497" y="245" width="36" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1471" y="305" width="87" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_RedeliveryPossible_di" bpmnElement="Gateway_RedeliveryPossible" isMarkerVisible="true">
+        <dc:Bounds x="1800" y="165" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1860" y="176" width="52" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_08fm0fj_di" bpmnElement="EndEvent_DeliveryFailed">
+        <dc:Bounds x="1807" y="774" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1727" y="785" width="70" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_00l0ahb_di" bpmnElement="Event_00l0ahb">
+        <dc:Bounds x="1272" y="172" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1249" y="148" width="83" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0g725wu_di" bpmnElement="Event_1en7of0">
+        <dc:Bounds x="1272" y="252" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1298" y="293" width="54" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0d53rqg_di" bpmnElement="Flow_0d53rqg">
+        <di:waypoint x="1090" y="230" />
+        <di:waypoint x="1160" y="230" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0axfkhe_di" bpmnElement="Flow_0axfkhe">
+        <di:waypoint x="1185" y="270" />
+        <di:waypoint x="1185" y="774" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Start_To_LoadPackedOrders_di" bpmnElement="Flow_Start_To_LoadPackedOrders">
+        <di:waypoint x="126" y="13" />
+        <di:waypoint x="126" y="792" />
+        <di:waypoint x="170" y="792" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_LoadPackedOrders_To_ReviewOrders_di" bpmnElement="Flow_LoadPackedOrders_To_ReviewOrders">
+        <di:waypoint x="300" y="792" />
+        <di:waypoint x="345" y="792" />
+        <di:waypoint x="345" y="35" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_07pt5a5_di" bpmnElement="Flow_07pt5a5">
+        <di:waypoint x="490" y="20" />
+        <di:waypoint x="490" y="752" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0gw6ren_di" bpmnElement="Flow_0gw6ren">
+        <di:waypoint x="540" y="792" />
+        <di:waypoint x="597" y="792" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_GenerateRoutes_To_RoutesFeasible_di" bpmnElement="Flow_GenerateRoutes_To_RoutesFeasible">
+        <di:waypoint x="667" y="752" />
+        <di:waypoint x="667" y="255" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_RoutesFeasible_Yes_To_LoadOrders_di" bpmnElement="Flow_RoutesFeasible_Yes_To_LoadOrders">
+        <di:waypoint x="692" y="230" />
+        <di:waypoint x="752" y="230" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="706" y="213" width="18" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_RoutesFeasible_No_To_ReviewProblem_di" bpmnElement="Flow_RoutesFeasible_No_To_ReviewProblem">
+        <di:waypoint x="667" y="205" />
+        <di:waypoint x="667" y="35" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="639" y="173" width="15" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_LoadOrders_To_UpdateDispatchStatus_di" bpmnElement="Flow_LoadOrders_To_UpdateDispatchStatus">
+        <di:waypoint x="817" y="270" />
+        <di:waypoint x="817" y="792" />
+        <di:waypoint x="860" y="792" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_UpdateDispatchStatus_To_DeliverOrders_di" bpmnElement="Flow_UpdateDispatchStatus_To_DeliverOrders">
+        <di:waypoint x="990" y="792" />
+        <di:waypoint x="1065" y="792" />
+        <di:waypoint x="1065" y="255" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_RedeliveryPossible_Yes_To_AttemptRedelivery_di" bpmnElement="Flow_RedeliveryPossible_Yes_To_AttemptRedelivery">
+        <di:waypoint x="1825" y="165" />
+        <di:waypoint x="1825" y="120" />
+        <di:waypoint x="1065" y="120" />
+        <di:waypoint x="1065" y="205" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1838" y="144" width="18" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ReviewProblem_To_GenerateRoutes_di" bpmnElement="Flow_ReviewProblem_To_GenerateRoutes">
+        <di:waypoint x="597" y="-5" />
+        <di:waypoint x="515" y="-5" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_18w4u31_di" bpmnElement="Flow_18w4u31">
+        <di:waypoint x="415" y="-5" />
+        <di:waypoint x="465" y="-5" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1xgpebs_di" bpmnElement="Flow_1xgpebs">
+        <di:waypoint x="1290" y="288" />
+        <di:waypoint x="1290" y="450" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_12rjwu7_di" bpmnElement="Flow_12rjwu7">
+        <di:waypoint x="1290" y="530" />
+        <di:waypoint x="1290" y="640" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0jdmtiw_di" bpmnElement="Flow_0jdmtiw">
+        <di:waypoint x="1340" y="680" />
+        <di:waypoint x="1447" y="680" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1y8rt93_di" bpmnElement="Flow_1y8rt93">
+        <di:waypoint x="1308" y="190" />
+        <di:waypoint x="1570" y="190" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ContactCustomer_To_RedeliveryPossible_di" bpmnElement="Flow_ContactCustomer_To_RedeliveryPossible">
+        <di:waypoint x="1700" y="190" />
+        <di:waypoint x="1800" y="190" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_RedeliveryPossible_No_To_SendFailedNotice_di" bpmnElement="Flow_RedeliveryPossible_No_To_SendFailedNotice">
+        <di:waypoint x="1825" y="215" />
+        <di:waypoint x="1825" y="774" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1839" y="253" width="15" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DataInputAssociation_1avgdr7_di" bpmnElement="DataInputAssociation_1avgdr7">
+        <di:waypoint x="274" y="705" />
+        <di:waypoint x="253" y="752" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DataOutputAssociation_1pyjm0d_di" bpmnElement="DataOutputAssociation_1pyjm0d">
+        <di:waypoint x="694" y="752" />
+        <di:waypoint x="727" y="702" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DataOutputAssociation_08dj085_di" bpmnElement="DataOutputAssociation_08dj085">
+        <di:waypoint x="951" y="752" />
+        <di:waypoint x="981" y="705" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DataInputAssociation_0b40f3y_di" bpmnElement="DataInputAssociation_0b40f3y">
+        <di:waypoint x="1533" y="257" />
+        <di:waypoint x="1576" y="229" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MessageFlow_DeliveryFailedNotice_di" bpmnElement="MessageFlow_DeliveryFailedNotice">
+        <di:waypoint x="1825" y="810" />
+        <di:waypoint x="1825" y="1009" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1743" y="971" width="70" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MessageFlow_DeliveryConfirmation_di" bpmnElement="MessageFlow_DeliveryConfirmation">
+        <di:waypoint x="1185" y="810" />
+        <di:waypoint x="1185" y="1009" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1115" y="956" width="60" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MessageFlow_DeliveryDelayNotice_di" bpmnElement="MessageFlow_DeliveryDelayNotice">
+        <di:waypoint x="1290" y="720" />
+        <di:waypoint x="1290" y="1009" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1205" y="959" width="70" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

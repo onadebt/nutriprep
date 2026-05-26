@@ -1,0 +1,153 @@
+{
+  "executionPlatform": "Camunda Cloud",
+  "executionPlatformVersion": "8.9.0",
+  "exporter": {
+    "name": "Camunda Web Modeler",
+    "version": "8cca9cf"
+  },
+  "schemaVersion": 19,
+  "id": "contact-customer-form",
+  "components": [
+    {
+      "text": "## Contact customer about failed delivery",
+      "type": "text",
+      "layout": {
+        "row": "Row_h_1",
+        "columns": null
+      },
+      "id": "Field_h_1"
+    },
+    {
+      "label": "Customer info",
+      "components": [
+        {
+          "label": "Customer name",
+          "type": "textfield",
+          "key": "customerName",
+          "layout": {
+            "row": "Row_customerName",
+            "columns": null
+          },
+          "id": "Field_customerName",
+          "disabled": true
+        },
+        {
+          "label": "Customer phone",
+          "type": "textfield",
+          "key": "customerPhone",
+          "layout": {
+            "row": "Row_customerPhone",
+            "columns": null
+          },
+          "id": "Field_customerPhone",
+          "disabled": true
+        },
+        {
+          "label": "Customer email",
+          "type": "textfield",
+          "key": "customerEmail",
+          "layout": {
+            "row": "Row_customerEmail",
+            "columns": null
+          },
+          "id": "Field_customerEmail",
+          "disabled": true
+        },
+        {
+          "label": "Order ID",
+          "type": "textfield",
+          "key": "orderId",
+          "layout": {
+            "row": "Row_orderId",
+            "columns": null
+          },
+          "id": "Field_orderId",
+          "disabled": true
+        }
+      ],
+      "showOutline": true,
+      "type": "group",
+      "layout": {
+        "row": "Row_g1",
+        "columns": 13
+      },
+      "id": "Group_Customer"
+    },
+    {
+      "label": "Contact method",
+      "values": [
+        {
+          "label": "Phone call",
+          "value": "phone"
+        },
+        {
+          "label": "SMS",
+          "value": "sms"
+        },
+        {
+          "label": "Email",
+          "value": "email"
+        }
+      ],
+      "type": "select",
+      "key": "contactMethod",
+      "layout": {
+        "row": "Row_contactMethod",
+        "columns": null
+      },
+      "id": "Field_contactMethod",
+      "validate": {
+        "required": true
+      }
+    },
+    {
+      "label": "Was the customer reached?",
+      "values": [
+        {
+          "label": "Yes — customer reached",
+          "value": true
+        },
+        {
+          "label": "No — could not contact",
+          "value": false
+        }
+      ],
+      "type": "radio",
+      "key": "customerReached",
+      "layout": {
+        "row": "Row_customerReached",
+        "columns": null
+      },
+      "id": "Field_customerReached",
+      "validate": {
+        "required": true
+      }
+    },
+    {
+      "label": "Contact notes",
+      "type": "textarea",
+      "key": "contactNotes",
+      "layout": {
+        "row": "Row_contactNotes",
+        "columns": null
+      },
+      "id": "Field_contactNotes",
+      "description": "What did the customer say? Their preference for redelivery?",
+      "validate": {
+        "required": true,
+        "minLength": 10
+      }
+    },
+    {
+      "label": "Submit",
+      "action": "submit",
+      "type": "button",
+      "layout": {
+        "row": "Row_0ro2xxz",
+        "columns": null
+      },
+      "id": "Field_0t0j81d"
+    }
+  ],
+  "type": "default"
+}
